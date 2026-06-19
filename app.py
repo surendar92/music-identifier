@@ -271,7 +271,6 @@ section[data-testid="stSidebar"] > div > div > button {
     padding: 16px !important;
 }
 
-/* Fix the structural flex container */
 [data-testid="stFileUploaderDropzone"] {
     display: flex !important;
     flex-direction: row !important;
@@ -284,7 +283,6 @@ section[data-testid="stSidebar"] > div > div > button {
     padding: 12px 16px !important;
 }
 
-/* Force instructions area text to stay dark green and readable */
 [data-testid="stFileUploaderDropzoneInstructions"] {
     display: flex !important;
     flex-direction: column !important;
@@ -303,7 +301,7 @@ section[data-testid="stSidebar"] > div > div > button {
     color: #6b7f6b !important;
 }
 
-/* Bulletproof fix for the button: force background dark, and text ALWAYS white */
+/* Force the button background and structural alignment */
 [data-testid="stFileUploaderDropzone"] button {
     background: #162316 !important;
     border: none !important;
@@ -311,16 +309,15 @@ section[data-testid="stSidebar"] > div > div > button {
     padding: 8px 20px !important;
     font-weight: 600 !important;
     white-space: nowrap !important;
-    min-width: 130px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    min-width: 140px !important;
 }
 
-/* Strictly forces all potential text child layers inside the button to be white */
+/* THE FIX: Stop the global dark text rule from turning button text black */
+[data-testid="stFileUploaderDropzone"] button,
 [data-testid="stFileUploaderDropzone"] button *,
 [data-testid="stFileUploaderDropzone"] button div,
-[data-testid="stFileUploaderDropzone"] button span {
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploaderDropzone"] button p {
     color: #ffffff !important;
 }
 
@@ -409,9 +406,16 @@ footer     { visibility: hidden; }
 
 /* Don't hide the whole header — that also hides the button that
    reopens a collapsed sidebar. Hide only the toolbar bits we don't want. */
+/* Ensure header and structural tracking components are always visible and layout properly */
 header[data-testid="stHeader"] {
     background: transparent !important;
-    height: auto !important;
+    z-index: 999 !important;
+    display: flex !important;
+}
+
+[data-testid="stSidebar"] {
+    visibility: visible !important;
+    display: block !important;
 }
 header[data-testid="stHeader"] [data-testid="stToolbar"] {
     visibility: hidden !important;
