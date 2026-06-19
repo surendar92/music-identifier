@@ -285,10 +285,12 @@ if st.session_state.mode == "Single":
                 if "best_song" in st.session_state and st.session_state.best_song != "Unknown / No Match":
 
                     # Safely calculate analytical certainty percentage
-                    total_top_matches = sum([count for _, count in
-                                             st.session_state.match_counts[:5]]) if st.session_state.match_counts else 1
-                    certainty = int(
-                        (st.session_state.best_score / total_top_matches) * 100) if total_top_matches > 0 else 100
+                    cached_matches = st.session_state.get("match_counts", [])
+                    cached_score = st.session_state.get("best_score", 0)
+
+                    # Safely calculate analytical certainty percentage
+                    total_top_matches = sum([count for _, count in cached_matches[:5]]) if cached_matches else 1
+                    certainty = int((cached_score / total_top_matches) * 100) if total_top_matches > 0 else 100
 
                     # Main Dynamic Match Banner Card
                     st.markdown(
