@@ -207,17 +207,21 @@ with st.sidebar:
     if avail_songs:
         selected_db_song = st.selectbox("View Constellation from DB", avail_songs)
         if selected_db_song:
+            # Modified query to pull unique coordinates matching individual song footprints across the full timeline
             cursor.execute(
-                "SELECT t1_anchor_time, f1 FROM hashes WHERE song_name = ? LIMIT 800",
+                "SELECT DISTINCT t1_anchor_time, f1 FROM hashes WHERE song_name = ?",
                 (selected_db_song,)
             )
             points = cursor.fetchall()
             if points:
                 pt_times, pt_freqs = zip(*points)
                 fig_side, ax_side = plt.subplots(figsize=(4, 3))
-                ax_side.scatter(pt_times, pt_freqs, s=2, color='#764ba2', alpha=0.5)
-                ax_side.set_title("Stored Peak Constellation Map", fontsize=8)
+                ax_side.scatter(pt_times, pt_freqs, s=4, color='orange', alpha=0.6, edgecolors='none')
+                ax_side.set_title(f"Constellation Map: {selected_db_song}", fontsize=9)
+                ax_side.set_xlabel("Time (seconds)", fontsize=7)
+                ax_side.set_ylabel("Frequency (Hz)", fontsize=7)
                 ax_side.tick_params(axis='both', which='major', labelsize=6)
+                ax_side.grid(True, alpha=0.2)
                 st.pyplot(fig_side)
 
 # ==============================================================================
@@ -478,7 +482,7 @@ else:  # Batch mode
                         "prediction": prediction
                     })
 
-                    # Dynamic analytical visualization rendering for each evaluated file
+                    # Dynamic analytical visualization rendering for each evaluated batch file
                     with st.expander(f"📊 Signal Analysis Breakdown: {uploaded_file.name}", expanded=False):
                         st.markdown(
                             f"**Prediction Matched:** `{prediction}` | **Consensus Peak Score:** `{best_score}`")
