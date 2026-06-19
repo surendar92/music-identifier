@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from fingerprint import fingerprint_audio_file
 
-
 st.markdown("""
     <style>
         div.stButton > button:first-child {
@@ -26,6 +25,19 @@ st.markdown("""
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
         }
+        .sidebar-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background-color: #1E2235;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -39,6 +51,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+
 # ============================================================================
 # DATABASE CONNECTION (Cached)
 # ============================================================================
@@ -51,6 +64,7 @@ def get_db_connection():
     except Exception as e:
         st.error(f"❌ Could not connect to database: {e}")
         return None
+
 
 @st.cache_resource
 def get_db_stats():
@@ -75,6 +89,7 @@ def get_db_stats():
     total_entries = cursor.fetchone()[0]
 
     return num_songs, unique_hashes, total_entries
+
 
 # ============================================================================
 # IDENTIFY FUNCTION (Using SQLite)
@@ -127,7 +142,7 @@ def identify_query_clip_sqlite(query_audio_path, conn):
         # Group offsets to find histogram peak
         counts, bin_edges = np.histogram(
             offsets,
-            bins=np.arange(min(offsets)-1, max(offsets)+1, 0.5)
+            bins=np.arange(min(offsets) - 1, max(offsets) + 1, 0.5)
         )
         max_spike = np.max(counts)
 
@@ -139,6 +154,7 @@ def identify_query_clip_sqlite(query_audio_path, conn):
     print(f"Prediction: '{best_song}' with consensus peak score of {highest_peak_count}!")
 
     return best_song, highest_peak_count, best_offsets_list, match_counts, metadata
+
 
 # ============================================================================
 # MAIN UI
@@ -160,18 +176,49 @@ if db_conn is None:
     """)
     st.stop()
 
-# Show database stats in sidebar
+# Show database stats in refined sidebar
 with st.sidebar:
-    st.markdown("### 📊 Database Stats")
+    st.markdown('<div class="sidebar-header">📊 Database Dashboard</div>', unsafe_allow_html=True)
     num_songs, unique_hashes, total_entries = get_db_stats()
     if num_songs:
-        st.metric("Songs", num_songs)
-        st.metric("Unique Hashes", f"{unique_hashes:,}")
-        st.metric("Total Entries", f"{total_entries:,}")
+        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
+        st.metric("Total Reference Songs", num_songs)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Database info
-        db_size = os.path.getsize("music_database.db") / (1024*1024)
-        st.metric("DB Size", f"{db_size:.2f} MB")
+        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
+        st.metric("Unique Fingerprint Hashes", f"{unique_hashes:,}")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
+        st.metric("Total Structural Entries", f"{total_entries:,}")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        db_size = os.path.getsize("music_database.db") / (1024 * 1024)
+        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
+        st.metric("Database Storage Size", f"{db_size:.2f} MB")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🔍 Reference Browser")
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT DISTINCT song_name FROM hashes ORDER BY song_name")
+    avail_songs = [row[0] for row in cursor.fetchall()]
+
+    if avail_songs:
+        selected_db_song = st.selectbox("View Constellation from DB", avail_songs)
+        if selected_db_song:
+            cursor.execute(
+                "SELECT t1_anchor_time, f1 FROM hashes WHERE song_name = ? LIMIT 800",
+                (selected_db_song,)
+            )
+            points = cursor.fetchall()
+            if points:
+                pt_times, pt_freqs = zip(*points)
+                fig_side, ax_side = plt.subplots(figsize=(4, 3))
+                ax_side.scatter(pt_times, pt_freqs, s=2, color='#764ba2', alpha=0.5)
+                ax_side.set_title("Stored Peak Constellation Map", fontsize=8)
+                ax_side.tick_params(axis='both', which='major', labelsize=6)
+                st.pyplot(fig_side)
 
 # ==============================================================================
 # MODERN MODE SELECTION (MAIN PAGE)
@@ -200,8 +247,8 @@ with col1:
             background-color: {'#1E2235' if is_single else 'transparent'};
             text-align: center;
         ">
-            <h3>🎧 Single Clip</h3>
-            <p style="color: #A3A8B4; font-size: 14px;">Identify a single song using fast fingerprint matching.</p>
+            <h3>🎧 Single Clip Mode</h3>
+            <p style="color: #A3A8B4; font-size: 14px;">Identify a single song with fully detailed execution steps.</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -224,8 +271,8 @@ with col2:
             background-color: {'#1E2235' if is_batch else 'transparent'};
             text-align: center;
         ">
-            <h3>📂 Batch Mode</h3>
-            <p style="color: #A3A8B4; font-size: 14px;">Process and catalog multiple audio files at once.</p>
+            <h3>📂 Batch Operations Mode</h3>
+            <p style="color: #A3A8B4; font-size: 14px;">Process multiple files simultaneously and audit tracking metrics.</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -256,7 +303,7 @@ if st.session_state.mode == "Single":
 
         # Save uploaded file temporarily
         temp_dir = "./tmp"
-        os.makedirs(temp_dir, exist_ok=True)  # Automatically creates the folder if it's missing
+        os.makedirs(temp_dir, exist_ok=True)
         temp_path = os.path.join(temp_dir, uploaded_file.name)
         with open(temp_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
@@ -314,6 +361,7 @@ if st.session_state.mode == "Single":
                 except Exception as e:
                     st.error(f"❌ Error: {str(e)}")
                     import traceback
+
                     st.write(traceback.format_exc())
 
         # ===== TAB 2: SPECTROGRAM =====
@@ -366,11 +414,6 @@ if st.session_state.mode == "Single":
         with tab4:
             st.subheader("📈 Offset Histogram")
             try:
-                best_song, best_score, best_offsets_list, _, _ = identify_query_clip_sqlite(
-                    temp_path,
-                    db_conn
-                )
-
                 if best_offsets_list and len(best_offsets_list) > 0:
                     fig, ax = plt.subplots(figsize=(12, 5))
                     ax.hist(best_offsets_list, bins=50, color='steelblue', edgecolor='navy', alpha=0.7)
@@ -395,7 +438,7 @@ if st.session_state.mode == "Single":
 # MODE 2: BATCH MODE
 # ============================================================================
 else:  # Batch mode
-    st.subheader("📁 Batch Processing")
+    st.subheader("📁 Batch Processing & Computational Breakdown")
 
     uploaded_files = st.file_uploader(
         "Choose multiple audio files",
@@ -418,13 +461,15 @@ else:  # Batch mode
                 progress_bar.progress((idx + 1) / len(uploaded_files))
 
                 temp_dir = "./tmp"
-                os.makedirs(temp_dir, exist_ok=True)  # Automatically creates the folder if it's missing
+                os.makedirs(temp_dir, exist_ok=True)
                 temp_path = os.path.join(temp_dir, uploaded_file.name)
                 with open(temp_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
                 try:
-                    best_song, _, _, _, _ = identify_query_clip_sqlite(temp_path, db_conn)
+                    best_song, best_score, best_offsets_list, match_counts, metadata = identify_query_clip_sqlite(
+                        temp_path, db_conn
+                    )
                     filename_without_ext = os.path.splitext(uploaded_file.name)[0]
                     prediction = best_song if best_song != "Unknown / No Match" else "UNKNOWN"
 
@@ -432,6 +477,59 @@ else:  # Batch mode
                         "filename": filename_without_ext,
                         "prediction": prediction
                     })
+
+                    # Dynamic analytical visualization rendering for each evaluated file
+                    with st.expander(f"📊 Signal Analysis Breakdown: {uploaded_file.name}", expanded=False):
+                        st.markdown(
+                            f"**Prediction Matched:** `{prediction}` | **Consensus Peak Score:** `{best_score}`")
+
+                        col_p1, col_p2, col_p3 = st.columns(3)
+
+                        with col_p1:
+                            st.write("🎼 **Spectrogram Plot**")
+                            try:
+                                fig_b1, ax_b1 = plt.subplots(figsize=(4, 2.5))
+                                ax_b1.imshow(
+                                    metadata['spectrogram'], aspect='auto', origin='lower', cmap='magma',
+                                    extent=[metadata['times'][0], metadata['times'][-1], metadata['frequencies'][0],
+                                            metadata['frequencies'][-1]]
+                                )
+                                ax_b1.set_xlabel("Time (s)", fontsize=6)
+                                ax_b1.set_ylabel("Freq (Hz)", fontsize=6)
+                                ax_b1.tick_params(labelsize=6)
+                                st.pyplot(fig_b1)
+                            except Exception as ex:
+                                st.error(f"Render Error: {ex}")
+
+                        with col_p2:
+                            st.write("⭐ **Peak Constellation**")
+                            try:
+                                fig_b2, ax_b2 = plt.subplots(figsize=(4, 2.5))
+                                ax_b2.scatter(metadata['peak_times'], metadata['peak_freqs'], alpha=0.6, s=8,
+                                              color='orange')
+                                ax_b2.set_xlabel("Time (s)", fontsize=6)
+                                ax_b2.set_ylabel("Freq (Hz)", fontsize=6)
+                                ax_b2.tick_params(labelsize=6)
+                                ax_b2.grid(True, alpha=0.2)
+                                st.pyplot(fig_b2)
+                            except Exception as ex:
+                                st.error(f"Render Error: {ex}")
+
+                        with col_p3:
+                            st.write("📈 **Time-Offset Histogram**")
+                            try:
+                                if best_offsets_list and len(best_offsets_list) > 0:
+                                    fig_b3, ax_b3 = plt.subplots(figsize=(4, 2.5))
+                                    ax_b3.hist(best_offsets_list, bins=30, color='steelblue', alpha=0.7)
+                                    ax_b3.set_xlabel("Offset Shift (s)", fontsize=6)
+                                    ax_b3.set_ylabel("Hashes Count", fontsize=6)
+                                    ax_b3.tick_params(labelsize=6)
+                                    ax_b3.grid(True, alpha=0.2)
+                                    st.pyplot(fig_b3)
+                                else:
+                                    st.caption("No consensus distribution match profile found.")
+                            except Exception as ex:
+                                st.error(f"Render Error: {ex}")
 
                 except Exception as e:
                     filename_without_ext = os.path.splitext(uploaded_file.name)[0]
@@ -464,12 +562,10 @@ else:  # Batch mode
 
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Total", len(results))
+                st.metric("Total Audited Files", len(results))
             with col2:
                 unknowns = sum(1 for r in results if r['prediction'] in ['UNKNOWN', 'ERROR'])
-                st.metric("Identified", len(results) - unknowns)
+                st.metric("Identified Tracks", len(results) - unknowns)
             with col3:
                 errors = sum(1 for r in results if r['prediction'] == 'ERROR')
-                st.metric("Errors", errors)
-
-
+                st.metric("Execution Failures", errors)
