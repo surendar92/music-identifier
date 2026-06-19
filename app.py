@@ -476,13 +476,21 @@ else:  # Batch mode
 # MODERN SIDEBAR: DATABASE STATUS
 # ==============================================================================
 with st.sidebar:
+    # 1. This should be your ONLY sidebar header now
     st.markdown("### 📊 Database Status")
 
     # Get stats from your existing backend helper
     num_songs, unique_hashes, total_entries = get_db_stats()
     db_size = os.path.getsize("music_database.db") / (1024 * 1024)
 
-    # Create a 2x2 layout structure within the sidebar
+    # ❌ REMOVE / COMMENT OUT ANY OLD CODES LIKE THESE:
+    # st.markdown("### 📊 Database Stats")  <-- Delete this old one if duplicated
+    # st.metric(label="Songs", ...)         <-- Delete these old vertical metrics
+    # st.metric(label="Unique Hashes", ...)
+    # st.metric(label="Total Entries", ...)
+    # st.metric(label="DB Size", ...)
+
+    # 2. Keep ONLY the grid layout structure below:
     row1_col1, row1_col2 = st.columns(2)
     row2_col1, row2_col2 = st.columns(2)
 
@@ -534,7 +542,6 @@ with st.sidebar:
 
     # Elegant Backend Status Info Group
     st.markdown("### ⚡ Backend Info")
-    st.success("SQLite Database Connected", icon="🔌")
 
     st.markdown(
         """
