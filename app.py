@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Music Identifier",
     page_icon="🎵",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state=st.session_state.sidebar_state
 )
 
 st.markdown("""
@@ -263,7 +263,6 @@ section[data-testid="stSidebar"] > div > div > button {
     padding-top: 1rem !important;
 }
 /* ── FILE UPLOADER ── */
-/* Targets the outer block wrapper container */
 [data-testid="stFileUploader"] {
     background: #ffffff !important; 
     border-radius: 12px !important;
@@ -272,7 +271,7 @@ section[data-testid="stSidebar"] > div > div > button {
     padding: 16px !important;
 }
 
-/* Fixes the internal flex layout engine of the dropzone area */
+/* Fix the structural flex container */
 [data-testid="stFileUploaderDropzone"] {
     display: flex !important;
     flex-direction: row !important;
@@ -285,7 +284,7 @@ section[data-testid="stSidebar"] > div > div > button {
     padding: 12px 16px !important;
 }
 
-/* Forces the instructions text block away from the button */
+/* Force instructions area text to stay dark green and readable */
 [data-testid="stFileUploaderDropzoneInstructions"] {
     display: flex !important;
     flex-direction: column !important;
@@ -294,8 +293,8 @@ section[data-testid="stSidebar"] > div > div > button {
     flex-grow: 1 !important;
 }
 
-/* Adjusts colors for maximum readability against light backdrops */
-[data-testid="stFileUploaderDropzoneInstructions"] span {
+[data-testid="stFileUploaderDropzoneInstructions"] span,
+[data-testid="stFileUploaderDropzoneInstructions"] div {
     color: #2d5a27 !important;
     font-weight: 600 !important;
 }
@@ -304,19 +303,28 @@ section[data-testid="stSidebar"] > div > div > button {
     color: #6b7f6b !important;
 }
 
-/* Completely isolates the browse files button styling */
-[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"] {
+/* Bulletproof fix for the button: force background dark, and text ALWAYS white */
+[data-testid="stFileUploaderDropzone"] button {
     background: #162316 !important;
-    color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 8px 16px !important;
+    padding: 8px 20px !important;
     font-weight: 600 !important;
     white-space: nowrap !important;
-    margin-left: auto !important;
+    min-width: 130px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"]:hover {
+/* Strictly forces all potential text child layers inside the button to be white */
+[data-testid="stFileUploaderDropzone"] button *,
+[data-testid="stFileUploaderDropzone"] button div,
+[data-testid="stFileUploaderDropzone"] button span {
+    color: #ffffff !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button:hover {
     background: #2d5a27 !important;
 }
 /* ── DATAFRAME ── */
@@ -636,6 +644,10 @@ def plot_histogram(offsets, song_name):
 if "mode" not in st.session_state:
     st.session_state.mode = "Single"
 
+# Track sidebar visibility state
+if "sidebar_state" not in st.session_state:
+    st.session_state.sidebar_state = "expanded"
+
 # ═══════════════════════════════════════════
 # SIDEBAR
 # ═══════════════════════════════════════════
@@ -708,6 +720,11 @@ st.markdown("""
     <p>Identify songs using spectrogram fingerprinting — SQLite powered</p>
 </div>
 """, unsafe_allow_html=True)
+
+btn_label = "Hide Sidebar 👈" if st.session_state.sidebar_state == "expanded" else "Show Sidebar 👉"
+if st.button(btn_label, key="sidebar_toggle_trigger"):
+    st.session_state.sidebar_state = "collapsed" if st.session_state.sidebar_state == "expanded" else "expanded"
+    st.rerun()
 
 # Mode cards
 col1, col2, col3 = st.columns(3)
