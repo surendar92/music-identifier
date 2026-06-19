@@ -1,575 +1,976 @@
-# app.py (SQLite version)
-# Streamlit app with SQLite database backend
-# Run with: streamlit run app.py
-
 import streamlit as st
 import sqlite3
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-from fingerprint import fingerprint_audio_file
+import urllib.parse
 
-st.markdown("""
-    <style>
-        div.stButton > button:first-child {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 8px;
-            border: none;
-            padding: 10px 24px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        div.stButton > button:first-child:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
-        }
-        .sidebar-header {
-            font-size: 20px;
-            font-weight: bold;
-            color: #764ba2;
-            margin-bottom: 15px;
-        }
-        .stat-card {
-            background-color: #1E2235;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# ============================================================================
-# PAGE CONFIG
-# ============================================================================
 st.set_page_config(
-    page_title="🎵 Music Identifier",
+    page_title="Music Identifier",
     page_icon="🎵",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+st.markdown("""
+<style>
+/* ── SATOSHI FONT ── */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-# ============================================================================
-# DATABASE CONNECTION (Cached)
-# ============================================================================
+*, html, body, [class*="css"] {
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+}
+
+/* ── MAIN BACKGROUND — light green from RoomSketch ── */
+.stApp { background: #f0f4ec !important; }
+.main .block-container { padding: 2rem 2.5rem !important; max-width: 100% !important; }
+
+/* ── SIDEBAR — dark green from RoomSketch ── */
+[data-testid="stSidebar"] {
+    background: #162316 !important;
+    border-right: none !important;
+    box-shadow: 3px 0 20px rgba(0,0,0,0.25) !important;
+}
+[data-testid="stSidebarContent"] { padding: 1.5rem 1.2rem !important; }
+
+/* Make ALL sidebar text white */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3 {
+    color: #ffffff !important;
+}
+
+/* ── SIDEBAR COLLAPSE ARROW — always visible ── */
+[data-testid="collapsedControl"] {
+    background: #162316 !important;
+    border-radius: 0 8px 8px 0 !important;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.3) !important;
+    top: 50% !important; height: 60px !important;
+    display: flex !important; align-items: center !important;
+}
+[data-testid="collapsedControl"]:hover { background: #1e3a1e !important; }
+[data-testid="collapsedControl"] svg { color: white !important; fill: white !important; stroke: white !important; }
+
+/* Sidebar expand/collapse button */
+button[data-testid="baseButton-headerNoPadding"] {
+    color: white !important;
+}
+section[data-testid="stSidebar"] > div > div > button {
+    color: white !important;
+    background: transparent !important;
+}
+
+/* ── SIDEBAR LOGO ── */
+.sb-logo {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 20px;
+}
+.sb-logo-icon {
+    width: 38px; height: 38px; background: #2d5a27;
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.2rem;
+}
+.sb-logo-text { font-size: 1.2rem; font-weight: 800; color: #ffffff !important; }
+
+.sb-section {
+    font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.35) !important;
+    letter-spacing: 3px; text-transform: uppercase; margin: 18px 0 10px;
+    display: block;
+}
+
+/* ── 2x2 STATS GRID ── */
+.stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px;
+}
+.stat-cell {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 12px 10px; text-align: center;
+}
+.stat-num { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; display: block; line-height: 1.1; }
+.stat-lbl { font-size: 0.58rem; color: rgba(255,255,255,0.4) !important; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; display: block; }
+
+/* Nav items */
+.sb-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 4px;
+    color: rgba(255,255,255,0.65) !important; font-size: 0.88rem; font-weight: 500;
+    transition: background 0.15s; cursor: pointer;
+}
+.sb-nav-item:hover { background: rgba(255,255,255,0.08) !important; color: white !important; }
+.sb-nav-item.active {
+    background: #2d5a27 !important; color: #ffffff !important; font-weight: 700;
+}
+
+/* Hide streamlit button styling in sidebar nav */
+[data-testid="stSidebar"] .stButton > button {
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    color: rgba(255,255,255,0.7) !important;
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    margin-bottom: 4px !important;
+}
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(255,255,255,0.08) !important;
+    color: white !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ── PAGE HEADER — dark green bg, white text ── */
+.page-header {
+    background: #162316;
+    border-radius: 16px; padding: 28px 32px; margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(22,35,22,0.25);
+}
+.page-header h1 { font-size: 1.9rem; font-weight: 800; color: #ffffff !important; margin: 0 0 4px; }
+.page-header p  { color: rgba(255,255,255,0.6) !important; margin: 0; font-size: 0.9rem; }
+
+/* ── MODE CARDS — white bg, black text ── */
+.mode-card {
+    background: #ffffff; border-radius: 14px; padding: 24px 20px;
+    border: 2px solid #e2e8dc; text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    height: 120px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.mode-card h3 { color: #0f1f0f !important; margin: 0 0 5px; font-size: 1.05rem; font-weight: 700; }
+.mode-card p  { color: #6b7f6b !important; font-size: 0.8rem; margin: 0; }
+.mode-card.active {
+    border-color: #2d5a27; background: #edf3ea;
+    box-shadow: 0 6px 20px rgba(45,90,39,0.15);
+}
+.mode-card.active h3 { color: #162316 !important; }
+
+/* ── ALL MAIN CONTENT TEXT = BLACK ── */
+.main p, .main span, .main div, .main label,
+.main h1, .main h2, .main h3, .main h4 {
+    color: #0f1f0f !important;
+}
+
+/* ── RESULT CARD — dark green bg, white text ── */
+.result-card {
+    background: #162316; border-radius: 16px;
+    padding: 28px 32px; margin: 16px 0;
+    box-shadow: 0 8px 30px rgba(22,35,22,0.3);
+    position: relative; overflow: hidden;
+}
+.result-card::after {
+    content: '🎵'; position: absolute; right: 32px; top: 50%;
+    transform: translateY(-50%); font-size: 5rem; opacity: 0.08;
+}
+.result-label { font-size: 0.6rem; color: rgba(255,255,255,0.45) !important; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.result-song  { font-size: 2rem; font-weight: 800; color: #ffffff !important; margin-bottom: 6px; line-height: 1.1; display: block; }
+.result-meta  { font-size: 0.82rem; color: rgba(255,255,255,0.55) !important; }
+.result-meta b { color: #86efac !important; }
+.result-time  {
+    display: inline-block; margin-top: 10px;
+    background: rgba(255,255,255,0.1); color: #86efac !important;
+    padding: 5px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+}
+.yt-btn {
+    display: inline-block; margin-top: 12px; margin-left: 8px;
+    background: #ffffff; color: #162316 !important; font-weight: 700;
+    text-decoration: none !important; padding: 8px 18px;
+    border-radius: 20px; font-size: 0.82rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+/* ── SECTION HEADER ── */
+.sec-hdr {
+    font-size: 1rem; font-weight: 700; color: #0f1f0f !important;
+    border-left: 4px solid #2d5a27; padding-left: 12px; margin: 20px 0 12px;
+    display: block;
+}
+
+/* ── CANDIDATE ROWS — white bg, black text ── */
+.cand-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 10px;
+    background: #ffffff; margin-bottom: 6px;
+    border: 1px solid #e2e8dc;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    transition: transform 0.15s;
+}
+.cand-row:hover { transform: translateX(3px); border-color: #a3c49a; }
+.cand-rank { font-size: 0.7rem; color: #9ca3af !important; width: 22px; font-weight: 700; }
+.cand-name { color: #0f1f0f !important; font-size: 0.88rem; font-weight: 600; flex: 1; }
+.cand-score{
+    color: #162316 !important; font-size: 0.8rem; font-weight: 700;
+    background: #d1e8c8; padding: 3px 10px; border-radius: 8px;
+}
+
+/* ── METRICS ── */
+[data-testid="metric-container"] {
+    background: #ffffff !important; border-radius: 12px !important;
+    border: 1px solid #e2e8dc !important; padding: 16px !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+}
+[data-testid="stMetricLabel"] { color: #6b7f6b !important; font-size: 0.7rem !important; font-weight: 600 !important; letter-spacing: 1px; text-transform: uppercase; }
+[data-testid="stMetricValue"] { color: #0f1f0f !important; font-size: 1.5rem !important; font-weight: 800 !important; }
+
+/* ── BUTTONS (main area) ── */
+.main .stButton > button {
+    background: #162316 !important; color: #ffffff !important;
+    border: none !important; border-radius: 8px !important;
+    font-weight: 700 !important; font-size: 0.88rem !important;
+    padding: 11px 22px !important;
+    box-shadow: 0 3px 12px rgba(22,35,22,0.3) !important;
+}
+.main .stButton > button:hover {
+    background: #2d5a27 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(22,35,22,0.35) !important;
+}
+
+/* ── TABS ── */
+.stTabs [data-baseweb="tab-list"] {
+    background: #ffffff !important; 
+    border-radius: 10px !important;
+    padding: 6px !important; 
+    gap: 20px !important; /* 👈 Increased from 3px to 20px for clear breathing room */
+    border: 1px solid #e2e8dc !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+}
+.stTabs [data-baseweb="tab"] {
+    background: transparent !important; 
+    color: #6b7f6b !important;
+    border-radius: 7px !important; 
+    font-size: 0.83rem !important; 
+    font-weight: 600 !important;
+    padding-left: 16px !important;  /* 👈 Added horizontal internal padding */
+    padding-right: 16px !important; /* 👈 Added horizontal internal padding */
+}
+.stTabs [aria-selected="true"] {
+    background: #162316 !important; 
+    color: #ffffff !important;
+}
+.stTabs [data-baseweb="tab-panel"] {
+    background: transparent !important; 
+    padding-top: 1rem !important;
+}
+
+/* ── FILE UPLOADER ── */
+[data-testid="stFileUploader"] {
+    background: #ffffff !important; 
+    border-radius: 12px !important;
+    border: 2px dashed #b8d4b0 !important;
+    overflow: hidden !important;
+    padding: 10px !important;
+}
+
+/* Force the label text inside the file uploader area to be clean grey/black and readable */
+[data-testid="stFileUploaderDropzoneInstructions"] span {
+    color: #2d5a27 !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stFileUploaderDropzoneInstructions"] small {
+    color: #6b7f6b !important;
+}
+
+/* Fix the button inside the file uploader dropzone */
+[data-testid="stFileUploaderDropzone"] button {
+    background: #162316 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button:hover {
+    background: #2d5a27 !important;
+}
+
+/* Ensure the dropzone layout aligns properly without overlapping */
+[data-testid="stFileUploaderDropzone"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    row-gap: 10px !important;
+    padding: 14px 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background-color: #f8faf6 !important;
+    border-radius: 8px !important;
+}
+/* ── DATAFRAME ── */
+[data-testid="stDataFrame"] {
+    border-radius: 10px !important; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background: white !important;
+}
+
+/* ── BATCH CARD ── */
+.batch-card {
+    background: #ffffff; border: 1px solid #e2e8dc;
+    border-radius: 12px; padding: 16px 18px; margin-bottom: 6px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+}
+.batch-fname { font-size: 0.72rem; color: #9ca3af !important; margin-bottom: 2px; }
+.batch-sname { font-size: 1.05rem; font-weight: 700; color: #0f1f0f !important; }
+.batch-pos   {
+    display: inline-block; margin-top: 6px;
+    background: #d1f0d1; color: #145214 !important;
+    padding: 3px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+}
+
+/* ── EXPANDER ── */
+.streamlit-expanderHeader,
+[data-testid="stExpander"] summary {
+    background: #ffffff !important; border-radius: 10px !important;
+    border: 1px solid #e2e8dc !important; font-weight: 600 !important;
+    color: #0f1f0f !important;
+}
+.streamlit-expanderContent,
+[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+    background: #f8faf6 !important;
+    border: 1px solid #e2e8dc !important;
+    border-top: none !important; border-radius: 0 0 10px 10px !important;
+    padding: 16px !important;
+}
+
+/* Force ALL text inside an expander (markdown, bold, plain) to be dark —
+   this is what makes the Spectrogram/Constellation/Histogram labels
+   and any other expander text visible instead of invisible/low-contrast */
+[data-testid="stExpander"] p,
+[data-testid="stExpander"] span,
+[data-testid="stExpander"] div,
+[data-testid="stExpander"] strong,
+[data-testid="stExpander"] label,
+[data-testid="stExpander"] li,
+[data-testid="stExpander"] h1,
+[data-testid="stExpander"] h2,
+[data-testid="stExpander"] h3,
+[data-testid="stExpander"] h4 {
+    color: #0f1f0f !important;
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+}
+
+/* Dedicated sub-section label style for Spectrogram / Constellation /
+   Histogram headings inside the Per-File Analysis expanders */
+.batch-subhdr {
+    display: block;
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #0f1f0f !important;
+    margin: 14px 0 8px;
+}
+
+/* ── PROGRESS ── */
+.stProgress > div > div { background: #2d5a27 !important; border-radius: 4px !important; }
+
+/* ── DIVIDER ── */
+hr { border-color: #e2e8dc !important; }
+
+/* ── ALERTS ── */
+[data-testid="stNotification"] { border-radius: 10px !important; }
+.stSuccess { background: #f0fdf0 !important; border-color: #86efac !important; }
+.stWarning { background: #fffbeb !important; }
+.stInfo    { background: #f0fdf4 !important; border-color: #86efac !important; }
+
+/* ── HIDE CHROME (but keep sidebar reopen control alive) ── */
+#MainMenu { visibility: hidden; }
+footer     { visibility: hidden; }
+
+/* Don't hide the whole header — that also hides the button that
+   reopens a collapsed sidebar. Hide only the toolbar bits we don't want. */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    height: auto !important;
+}
+header[data-testid="stHeader"] [data-testid="stToolbar"] {
+    visibility: hidden !important;
+}
+
+/* Force the "open sidebar" arrow to always be visible & clickable,
+   even after the sidebar has been collapsed */
+[data-testid="collapsedControl"] {
+    visibility: visible !important;
+    display: flex !important;
+    opacity: 1 !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+}
+
+/* ── DATABASE VIEW — dark constellation thumbnail cards ── */
+.db-grid-label {
+    font-size: 0.68rem; font-weight: 700; color: #6b7f6b !important;
+    letter-spacing: 3px; text-transform: uppercase; margin: 4px 0 14px;
+    display: block;
+}
+.db-card {
+    background: #0c140c; border-radius: 12px; padding: 10px 10px 14px;
+    border: 1px solid #243524;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.db-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+.db-card img {
+    width: 100%; display: block; border-radius: 8px; margin-bottom: 10px;
+}
+.db-card-name {
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+    font-size: 0.88rem; font-weight: 700; color: #ffffff !important;
+    line-height: 1.25; margin-bottom: 3px;
+    display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.db-card-hashes {
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+    font-size: 0.74rem; font-weight: 500; color: #7d9a7d !important;
+    display: block;
+}
+.db-search-wrap [data-testid="stTextInput"] input {
+    background: #ffffff !important; border-radius: 10px !important;
+}
+
+/* ── AUDIO PLAYER ── */
+audio { border-radius: 8px !important; width: 100%; }
+</style>
+""", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════
+# DATABASE
+# ═══════════════════════════════════════════
 @st.cache_resource
 def get_db_connection():
-    """Connect to SQLite database"""
     try:
-        conn = sqlite3.connect("music_database.db", check_same_thread=False)
-        return conn
-    except Exception as e:
-        st.error(f"❌ Could not connect to database: {e}")
+        return sqlite3.connect("music_database.db", check_same_thread=False)
+    except:
         return None
-
 
 @st.cache_resource
 def get_db_stats():
-    """Get database statistics"""
     conn = get_db_connection()
     if conn is None:
-        return None, None, None
+        return 0, 0, 0, 0
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(DISTINCT song_name) FROM hashes")
+        songs = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM (SELECT DISTINCT f1,f2,delta_t FROM hashes)")
+        uhash = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM hashes")
+        total = cur.fetchone()[0]
+        size  = os.path.getsize("music_database.db")/1024/1024 if os.path.exists("music_database.db") else 0
+        return songs, uhash, total, size
+    except:
+        return 0, 0, 0, 0
 
-    cursor = conn.cursor()
+@st.cache_data
+def get_song_list_with_counts():
+    """Returns [(song_name, hash_count), ...] sorted by song name."""
+    conn = get_db_connection()
+    if conn is None:
+        return []
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT song_name, COUNT(*) FROM hashes GROUP BY song_name ORDER BY song_name")
+        return cur.fetchall()
+    except:
+        return []
 
-    cursor.execute("""
-        SELECT COUNT(*) FROM (
-            SELECT DISTINCT f1, f2, delta_t FROM hashes
+@st.cache_data
+def get_constellation_thumb(song_name, w_px=300, h_px=190):
+    """
+    Builds a small dark constellation-map scatter for one song using the
+    real (anchor_time, f1) peak coordinates stored in the hashes table,
+    and returns it as a base64 PNG data-URI for embedding in HTML cards.
+    """
+    import io, base64
+    conn = get_db_connection()
+    if conn is None:
+        return None
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT DISTINCT t1_anchor_time, f1 FROM hashes WHERE song_name=?",
+            (song_name,)
         )
-    """)
-    unique_hashes = cursor.fetchone()[0]
+        rows = cur.fetchall()
+        if not rows:
+            return None
+        times = [r[0] for r in rows]
+        freqs = [r[1] for r in rows]
 
-    cursor.execute("SELECT COUNT(DISTINCT song_name) FROM hashes")
-    num_songs = cursor.fetchone()[0]
+        fig = plt.figure(figsize=(w_px/100, h_px/100), dpi=100)
+        ax = fig.add_axes([0, 0, 1, 1])
+        fig.patch.set_facecolor('#0c140c')
+        ax.set_facecolor('#0c140c')
 
-    cursor.execute("SELECT COUNT(*) FROM hashes")
-    total_entries = cursor.fetchone()[0]
+        colors = ['#7dd3fc', '#fcd34d', '#f0abfc', '#86efac', '#fca5a5', '#a5b4fc']
+        color = colors[abs(hash(song_name)) % len(colors)]
 
-    return num_songs, unique_hashes, total_entries
+        ax.scatter(times, freqs, s=2.2, color=color, alpha=0.75, linewidths=0)
+        ax.set_xlim(min(times), max(times) if max(times) > min(times) else min(times)+1)
+        ax.set_ylim(0, 4000)
+        ax.axis('off')
 
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', facecolor='#0c140c')
+        plt.close(fig)
+        buf.seek(0)
+        b64 = base64.b64encode(buf.read()).decode()
+        return f"data:image/png;base64,{b64}"
+    except Exception:
+        return None
 
-# ============================================================================
-# IDENTIFY FUNCTION (Using SQLite)
-# ============================================================================
-def identify_query_clip_sqlite(query_audio_path, conn):
-    """
-    Match query against SQLite database using YOUR identify logic
-    But with fast SQL lookups instead of in-memory dictionary
-    """
-    print(f"Fingerprinting query: {query_audio_path.split('/')[-1]}...")
-    query_hashes, metadata = fingerprint_audio_file(query_audio_path)
-
+# ═══════════════════════════════════════════
+# IDENTIFY (unchanged logic)
+# ═══════════════════════════════════════════
+def identify_query_clip_sqlite(path, conn):
+    from fingerprint import fingerprint_audio_file
+    query_hashes, metadata = fingerprint_audio_file(path)
     cursor = conn.cursor()
     song_offset_matches = {}
 
-    # 1. For each hash in the query, look it up in the database
     for hash_key, q_timestamps in query_hashes.items():
         f1, f2, dt = hash_key
-
-        # Fast indexed lookup in SQLite
-        cursor.execute("""
-            SELECT DISTINCT song_name, t1_anchor_time 
-            FROM hashes 
-            WHERE f1 = ? AND f2 = ? AND delta_t = ?
-        """, (int(f1), int(f2), round(dt, 3)))
-
-        results = cursor.fetchall()
-
-        # For each match, calculate offset
-        for song_name, db_t1 in results:
-            if song_name not in song_offset_matches:
-                song_offset_matches[song_name] = []
-
-            for q_t1 in q_timestamps:
-                offset = db_t1 - q_t1
-                song_offset_matches[song_name].append(round(offset, 2))
-
-    # 2. Find song with highest consensus
-    best_song = "Unknown / No Match"
-    highest_peak_count = 0
-    best_offsets_list = []
-    match_counts = {}
-
-    for song_name, offsets in song_offset_matches.items():
-        if len(offsets) == 0:
-            continue
-
-        match_counts[song_name] = len(offsets)
-
-        # Group offsets to find histogram peak
-        counts, bin_edges = np.histogram(
-            offsets,
-            bins=np.arange(min(offsets) - 1, max(offsets) + 1, 0.5)
+        cursor.execute(
+            "SELECT DISTINCT song_name, t1_anchor_time FROM hashes WHERE f1=? AND f2=? AND delta_t=?",
+            (int(f1), int(f2), round(dt, 3))
         )
-        max_spike = np.max(counts)
+        for song_name, db_t1 in cursor.fetchall():
+            song_offset_matches.setdefault(song_name, [])
+            for q_t1 in q_timestamps:
+                song_offset_matches[song_name].append(round(db_t1 - q_t1, 2))
 
-        if max_spike > highest_peak_count:
-            highest_peak_count = max_spike
-            best_song = song_name
-            best_offsets_list = offsets
+    best_song, best_peak, best_offsets, match_counts, best_offset_val = \
+        "Unknown / No Match", 0, [], {}, None
 
-    print(f"Prediction: '{best_song}' with consensus peak score of {highest_peak_count}!")
+    for sname, offsets in song_offset_matches.items():
+        if not offsets: continue
+        match_counts[sname] = len(offsets)
+        counts, edges = np.histogram(offsets, bins=np.arange(min(offsets)-1, max(offsets)+1, 0.5))
+        peak = int(np.max(counts))
+        if peak > best_peak:
+            best_peak       = peak
+            best_song       = sname
+            best_offsets    = offsets
+            best_offset_val = float(edges[int(np.argmax(counts))])
 
-    return best_song, highest_peak_count, best_offsets_list, match_counts, metadata
+    return best_song, best_peak, best_offsets, match_counts, metadata, best_offset_val
 
+# ═══════════════════════════════════════════
+# PLOTS
+# ═══════════════════════════════════════════
+def make_fig():
+    fig, ax = plt.subplots(figsize=(11, 4))
+    fig.patch.set_facecolor('#ffffff')
+    ax.set_facecolor('#f8faf6')
+    for sp in ax.spines.values(): sp.set_edgecolor('#e2e8dc')
+    ax.tick_params(colors='#4b5563')
+    ax.xaxis.label.set_color('#4b5563')
+    ax.yaxis.label.set_color('#4b5563')
+    ax.title.set_color('#0f1f0f')
+    return fig, ax
 
-# ============================================================================
-# MAIN UI
-# ============================================================================
-st.title("🎵 Music Identifier – Zapptain America")
-st.markdown("**Identify songs using spectrogram fingerprinting** (SQLite-powered)")
-st.markdown("---")
+def plot_spectrogram(metadata, title="Spectrogram"):
+    fig, ax = make_fig()
+    im = ax.imshow(
+        metadata['spectrogram'], aspect='auto', origin='lower', cmap='YlOrRd',
+        extent=[metadata['times'][0], metadata['times'][-1],
+                metadata['frequencies'][0], metadata['frequencies'][-1]]
+    )
+    ax.set_xlabel("Time (s)"); ax.set_ylabel("Frequency (Hz)")
+    ax.set_title(title, fontweight='bold', pad=10)
+    cb = plt.colorbar(im, ax=ax)
+    cb.set_label("dB", color='#4b5563')
+    cb.ax.tick_params(colors='#4b5563')
+    plt.tight_layout()
+    return fig
 
-# Get database connection
-db_conn = get_db_connection()
-if db_conn is None:
-    st.error("❌ music_database.db not found!")
-    st.info("""
-    Before running:
-    1. Create a `songs/` folder with reference songs
-    2. Run: `python build_database_sqlite.py`
-    3. This creates `music_database.db`
-    4. Then run: `streamlit run app.py`
-    """)
-    st.stop()
+def plot_constellation(metadata, title="Constellation Map"):
+    fig, ax = make_fig()
+    pt, pf = metadata['peak_times'], metadata['peak_freqs']
+    if len(pt) > 0:
+        ax.scatter(pt, pf, s=12, color='#2d5a27', alpha=0.7, edgecolors='#162316', linewidths=0.3)
+    ax.set_xlabel("Time (s)"); ax.set_ylabel("Frequency (Hz)")
+    ax.set_title(f"{title} — {len(pt)} peaks", fontweight='bold', pad=10)
+    ax.grid(True, alpha=0.2, color='#e2e8dc')
+    plt.tight_layout()
+    return fig
 
-# Show database stats in refined sidebar
-with st.sidebar:
-    st.markdown('<div class="sidebar-header">📊 Database Dashboard</div>', unsafe_allow_html=True)
-    num_songs, unique_hashes, total_entries = get_db_stats()
-    if num_songs:
-        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
-        st.metric("Total Reference Songs", num_songs)
-        st.markdown('</div>', unsafe_allow_html=True)
+def plot_histogram(offsets, song_name):
+    fig, ax = make_fig()
+    if offsets:
+        ax.hist(offsets, bins=50, color='#2d5a27', edgecolor='#162316', alpha=0.8)
+    ax.set_xlabel("Time Offset (s)"); ax.set_ylabel("Matching Hashes")
+    ax.set_title(f"Offset Histogram — {song_name}", fontweight='bold', pad=10)
+    ax.grid(True, alpha=0.2, color='#e2e8dc', axis='y')
+    plt.tight_layout()
+    return fig
 
-        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
-        st.metric("Unique Fingerprint Hashes", f"{unique_hashes:,}")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
-        st.metric("Total Structural Entries", f"{total_entries:,}")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        db_size = os.path.getsize("music_database.db") / (1024 * 1024)
-        st.markdown('<div class="stat-card">', unsafe_allow_html=True)
-        st.metric("Database Storage Size", f"{db_size:.2f} MB")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("### 🔍 Reference Browser")
-    cursor = db_conn.cursor()
-    cursor.execute("SELECT DISTINCT song_name FROM hashes ORDER BY song_name")
-    avail_songs = [row[0] for row in cursor.fetchall()]
-
-    if avail_songs:
-        selected_db_song = st.selectbox("View Constellation from DB", avail_songs)
-        if selected_db_song:
-            # Modified query to pull unique coordinates matching individual song footprints across the full timeline
-            cursor.execute(
-                "SELECT DISTINCT t1_anchor_time, f1 FROM hashes WHERE song_name = ?",
-                (selected_db_song,)
-            )
-            points = cursor.fetchall()
-            if points:
-                pt_times, pt_freqs = zip(*points)
-                fig_side, ax_side = plt.subplots(figsize=(4, 3))
-                ax_side.scatter(pt_times, pt_freqs, s=4, color='orange', alpha=0.6, edgecolors='none')
-                ax_side.set_title(f"Constellation Map: {selected_db_song}", fontsize=9)
-                ax_side.set_xlabel("Time (seconds)", fontsize=7)
-                ax_side.set_ylabel("Frequency (Hz)", fontsize=7)
-                ax_side.tick_params(axis='both', which='major', labelsize=6)
-                ax_side.grid(True, alpha=0.2)
-                st.pyplot(fig_side)
-
-# ==============================================================================
-# MODERN MODE SELECTION (MAIN PAGE)
-# ==============================================================================
-
-st.write("### 🛠️ Select Operation Mode")
-
-# Initialize session state for mode if it doesn't exist
+# ═══════════════════════════════════════════
+# SESSION STATE
+# ═══════════════════════════════════════════
 if "mode" not in st.session_state:
     st.session_state.mode = "Single"
 
-# Create two clean columns for the mode selection cards
-col1, col2 = st.columns(2)
+# ═══════════════════════════════════════════
+# SIDEBAR
+# ═══════════════════════════════════════════
+num_songs, unique_hashes, total_entries, db_size = get_db_stats()
 
-with col1:
-    # Card styling for Single Clip mode
-    is_single = st.session_state.mode == "Single"
+uh_str = f"{unique_hashes/1000:.0f}K" if unique_hashes >= 1000 else str(unique_hashes)
+te_str = f"{total_entries/1000:.0f}K" if total_entries >= 1000 else str(total_entries)
 
-    # Visual indicator using a nice markdown block
-    st.markdown(
-        f"""
-        <div style="
-            padding: 20px; 
-            border-radius: 10px; 
-            border: 2px solid {'#FF4B4B' if is_single else '#4F5366'}; 
-            background-color: {'#1E2235' if is_single else 'transparent'};
-            text-align: center;
-        ">
-            <h3>🎧 Single Clip Mode</h3>
-            <p style="color: #A3A8B4; font-size: 14px;">Identify a single song with fully detailed execution steps.</p>
+with st.sidebar:
+    st.markdown("""
+    <div class="sb-logo">
+        <div class="sb-logo-icon">🎵</div>
+        <div class="sb-logo-text">SongID</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<span class="sb-section">Database Stats</span>', unsafe_allow_html=True)
+    st.markdown(f"""
+    <div class="stats-grid">
+        <div class="stat-cell">
+            <span class="stat-num">{num_songs}</span>
+            <span class="stat-lbl">Songs</span>
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.write("")  # Spacer
-    if st.button("Activate Single Mode", use_container_width=True, type="primary" if is_single else "secondary"):
-        st.session_state.mode = "Single"
-        st.rerun()
+        <div class="stat-cell">
+            <span class="stat-num">{uh_str}</span>
+            <span class="stat-lbl">Uniq Hashes</span>
+        </div>
+        <div class="stat-cell">
+            <span class="stat-num">{te_str}</span>
+            <span class="stat-lbl">Total Entries</span>
+        </div>
+        <div class="stat-cell">
+            <span class="stat-num">{db_size:.1f}MB</span>
+            <span class="stat-lbl">DB Size</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<span class="sb-section">Navigation</span>', unsafe_allow_html=True)
+
+    s_active = "active" if st.session_state.mode == "Single" else ""
+    b_active = "active" if st.session_state.mode == "Batch"  else ""
+    d_active = "active" if st.session_state.mode == "Database" else ""
+    st.markdown(f'<div class="sb-nav-item {s_active}">🎧 &nbsp; Single Clip</div>', unsafe_allow_html=True)
+    if st.button("Open Single Clip", key="nav_s", use_container_width=True):
+        st.session_state.mode = "Single"; st.rerun()
+
+    st.markdown(f'<div class="sb-nav-item {b_active}">📂 &nbsp; Batch Mode</div>', unsafe_allow_html=True)
+    if st.button("Open Batch Mode", key="nav_b", use_container_width=True):
+        st.session_state.mode = "Batch"; st.rerun()
+
+    st.markdown(f'<div class="sb-nav-item {d_active}">🗄️ &nbsp; Database</div>', unsafe_allow_html=True)
+    if st.button("Open Database", key="nav_d", use_container_width=True):
+        st.session_state.mode = "Database"; st.rerun()
+
+# ═══════════════════════════════════════════
+# DB CHECK
+# ═══════════════════════════════════════════
+db_conn = get_db_connection()
+if db_conn is None:
+    st.error("❌ music_database.db not found. Run build_database_sqlite.py first.")
+    st.stop()
+
+# ═══════════════════════════════════════════
+# HEADER — dark green bg, white text
+# ═══════════════════════════════════════════
+st.markdown("""
+<div class="page-header">
+    <h1>🎵 Music Identifier</h1>
+    <p>Identify songs using spectrogram fingerprinting — SQLite powered</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Mode cards
+col1, col2, col3 = st.columns(3)
+with col1:
+    active = "active" if st.session_state.mode == "Single" else ""
+    st.markdown(f'<div class="mode-card {active}"><h3>🎧 Single Clip</h3><p>Identify a single song using fast fingerprint matching.</p></div>', unsafe_allow_html=True)
+    st.write("")
+    if st.button("Activate Single Mode", use_container_width=True, key="ms"):
+        st.session_state.mode = "Single"; st.rerun()
 
 with col2:
-    # Card styling for Batch Mode
-    is_batch = st.session_state.mode == "Batch"
+    active = "active" if st.session_state.mode == "Batch" else ""
+    st.markdown(f'<div class="mode-card {active}"><h3>📂 Batch Mode</h3><p>Process and catalog multiple audio files at once.</p></div>', unsafe_allow_html=True)
+    st.write("")
+    if st.button("Activate Batch Mode", use_container_width=True, key="mb"):
+        st.session_state.mode = "Batch"; st.rerun()
 
-    st.markdown(
-        f"""
-        <div style="
-            padding: 20px; 
-            border-radius: 10px; 
-            border: 2px solid {'#FF4B4B' if is_batch else '#4F5366'}; 
-            background-color: {'#1E2235' if is_batch else 'transparent'};
-            text-align: center;
-        ">
-            <h3>📂 Batch Operations Mode</h3>
-            <p style="color: #A3A8B4; font-size: 14px;">Process multiple files simultaneously and audit tracking metrics.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    st.write("")  # Spacer
-    if st.button("Activate Batch Mode", use_container_width=True, type="primary" if is_batch else "secondary"):
-        st.session_state.mode = "Batch"
-        st.rerun()
+with col3:
+    active = "active" if st.session_state.mode == "Database" else ""
+    st.markdown(f'<div class="mode-card {active}"><h3>🗄️ Database</h3><p>Browse constellation maps for every song in the database.</p></div>', unsafe_allow_html=True)
+    st.write("")
+    if st.button("Activate Database View", use_container_width=True, key="mdb"):
+        st.session_state.mode = "Database"; st.rerun()
 
 st.markdown("---")
-# ============================================================================
-# MODE 1: SINGLE CLIP
-# ============================================================================
+
+# ═══════════════════════════════════════════
+# SINGLE CLIP
+# ═══════════════════════════════════════════
 if st.session_state.mode == "Single":
-    st.subheader("🎧 Upload an audio clip to identify")
-    st.markdown("*Supports: WAV, MP3, OGG, FLAC, M4A*")
+    st.markdown('<span class="sec-hdr">Upload Audio Clip</span>', unsafe_allow_html=True)
+    st.markdown('<span style="color: black;">Supports WAV, MP3, OGG, FLAC, M4A</span>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns([2, 1])
+    uploaded = st.file_uploader("", type=["wav","mp3","ogg","flac","m4a"], label_visibility="collapsed")
 
-    with col1:
-        uploaded_file = st.file_uploader(
-            "Choose an audio file",
-            type=["wav", "mp3", "ogg", "flac", "m4a"]
-        )
+    if uploaded:
+        st.audio(uploaded)
 
-    if uploaded_file:
-        st.success(f"✓ File uploaded: **{uploaded_file.name}**")
+        temp_dir  = "./tmp"; os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, uploaded.name)
+        with open(temp_path, "wb") as f: f.write(uploaded.getbuffer())
 
-        # Save uploaded file temporarily
-        temp_dir = "./tmp"
-        os.makedirs(temp_dir, exist_ok=True)
-        temp_path = os.path.join(temp_dir, uploaded_file.name)
-        with open(temp_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
-        # Tabs for different views
-        tab1, tab2, tab3, tab4 = st.tabs(
-            ["📊 Result", "🎼 Spectrogram", "⭐ Constellation Peaks", "📈 Offset Histogram"]
-        )
-
-        # ===== TAB 1: IDENTIFICATION RESULT =====
-        with tab1:
-            st.subheader("🎯 Identification Result")
-
-            with st.spinner("🔍 Analyzing audio (querying SQLite database)..."):
+        run_key = f"res_{uploaded.name}_{uploaded.size}"
+        if run_key not in st.session_state:
+            with st.spinner("🔍 Analyzing audio..."):
                 try:
-                    # SQLite-based identification
-                    best_song, best_score, best_offsets_list, match_counts, metadata = identify_query_clip_sqlite(
-                        temp_path,
-                        db_conn
-                    )
-
-                    if best_song != "Unknown / No Match":
-                        # Display result
-                        col1, col2, col3 = st.columns(3)
-
-                        with col1:
-                            st.metric("🎵 Matched Song", best_song)
-
-                        with col2:
-                            st.metric("🎯 Confidence", best_score)
-
-                        with col3:
-                            if best_score > 0:
-                                confidence_pct = min(100, (best_score / 20) * 100)
-                                st.metric("📊 Certainty", f"{confidence_pct:.0f}%")
-
-                        st.success(f"✅ Song identified as **{best_song}**")
-
-                        # Top candidates
-                        st.markdown("### Top 5 Candidates")
-                        top_candidates = sorted(match_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-
-                        for rank, (song_name, score) in enumerate(top_candidates, 1):
-                            col_rank, col_name, col_score = st.columns([0.5, 2, 1])
-                            with col_rank:
-                                st.write(f"**#{rank}**")
-                            with col_name:
-                                st.write(song_name)
-                            with col_score:
-                                st.write(f"{score} matches")
-
-                    else:
-                        st.warning("⚠️ No match found in database.")
-
+                    st.session_state[run_key] = identify_query_clip_sqlite(temp_path, db_conn)
                 except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
-                    import traceback
+                    st.error(f"Error during analysis: {e}"); st.stop()
 
-                    st.write(traceback.format_exc())
+        result = st.session_state.get(run_key)
+        if not result: st.stop()
+        best_song, best_score, best_offsets, match_counts, metadata, best_offset = result
 
-        # ===== TAB 2: SPECTROGRAM =====
-        with tab2:
-            st.subheader("🎼 Spectrogram Visualization")
-            try:
-                spec_db = metadata['spectrogram']
-                times = metadata['times']
-                freqs = metadata['frequencies']
+        t_res, t_spec, t_con, t_hist = st.tabs(["🎯 Result","🎼 Spectrogram","⭐ Constellation","📈 Histogram"])
 
-                fig, ax = plt.subplots(figsize=(12, 5))
-                im = ax.imshow(
-                    spec_db,
-                    aspect='auto',
-                    origin='lower',
-                    cmap='magma',
-                    extent=[times[0], times[-1], freqs[0], freqs[-1]]
-                )
-                ax.set_xlabel("Time (seconds)")
-                ax.set_ylabel("Frequency (Hz)")
-                ax.set_title("Spectrogram (dB scale)")
-                plt.colorbar(im, ax=ax, label="Magnitude (dB)")
-                st.pyplot(fig)
+        with t_res:
+            if best_song != "Unknown / No Match":
+                pos = f"{best_offset:.1f}s" if best_offset is not None else "N/A"
+                yt  = f"https://www.youtube.com/results?search_query={urllib.parse.quote(best_song)}"
+                st.markdown(f"""
+                <div class="result-card">
+                    <span class="result-label">◈ IDENTIFIED SONG</span>
+                    <span class="result-song">{best_song}</span>
+                    <div class="result-meta">
+                        Confidence: <b>{best_score}</b> &nbsp;|&nbsp;
+                        Certainty: <b>{min(100,int((best_score/20)*100))}%</b>
+                    </div>
+                    <span class="result-time">📍 Matches at ~{pos} in reference song</span>
+                    <a class="yt-btn" href="{yt}" target="_blank">▶ YouTube</a>
+                </div>
+                """, unsafe_allow_html=True)
 
-            except Exception as e:
-                st.error(f"Error: {e}")
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Matched Song",     best_song[:18]+"…" if len(best_song)>18 else best_song)
+                c2.metric("Confidence Score", best_score)
+                c3.metric("Position in Song", pos)
 
-        # ===== TAB 3: CONSTELLATION =====
-        with tab3:
-            st.subheader("⭐ Peak Constellation")
-            try:
-                peak_times = metadata['peak_times']
-                peak_freqs = metadata['peak_freqs']
+                st.markdown('<span class="sec-hdr">Top Candidates</span>', unsafe_allow_html=True)
+                for rank, (sname, score) in enumerate(sorted(match_counts.items(), key=lambda x: x[1], reverse=True)[:5], 1):
+                    st.markdown(f"""
+                    <div class="cand-row">
+                        <span class="cand-rank">#{rank}</span>
+                        <span class="cand-name">{sname}</span>
+                        <span class="cand-score">{score} matches</span>
+                    </div>""", unsafe_allow_html=True)
+            else:
+                st.warning("⚠️ No match found in database.")
 
-                if len(peak_times) > 0:
-                    fig, ax = plt.subplots(figsize=(12, 5))
-                    ax.scatter(peak_times, peak_freqs, alpha=0.6, s=40, color='orange', edgecolors='darkorange')
-                    ax.set_xlabel("Time (seconds)")
-                    ax.set_ylabel("Frequency (Hz)")
-                    ax.set_title(f"Peak Constellation – {len(peak_times)} peaks")
-                    ax.grid(True, alpha=0.3)
-                    st.pyplot(fig)
-                else:
-                    st.info("No peaks detected")
+        with t_spec:
+            try: st.pyplot(plot_spectrogram(metadata, f"Spectrogram — {uploaded.name}"))
+            except Exception as e: st.error(f"Plot error: {e}")
 
-            except Exception as e:
-                st.error(f"Error: {e}")
+        with t_con:
+            try: st.pyplot(plot_constellation(metadata, f"Constellation — {uploaded.name}"))
+            except Exception as e: st.error(f"Plot error: {e}")
 
-        # ===== TAB 4: OFFSET HISTOGRAM =====
-        with tab4:
-            st.subheader("📈 Offset Histogram")
-            try:
-                if best_offsets_list and len(best_offsets_list) > 0:
-                    fig, ax = plt.subplots(figsize=(12, 5))
-                    ax.hist(best_offsets_list, bins=50, color='steelblue', edgecolor='navy', alpha=0.7)
-                    ax.set_xlabel("Time Offset (seconds)")
-                    ax.set_ylabel("Matching Hashes")
-                    ax.set_title(f"Offset Histogram for '{best_song}'")
-                    ax.grid(True, alpha=0.3, axis='y')
-                    st.pyplot(fig)
-                else:
-                    st.info("No offset data")
+        with t_hist:
+            if best_offsets:
+                try: st.pyplot(plot_histogram(best_offsets, best_song))
+                except Exception as e: st.error(f"Plot error: {e}")
+            else:
+                st.info("No offset data available.")
 
-            except Exception as e:
-                st.error(f"Error: {e}")
+        try: os.remove(temp_path)
+        except: pass
 
-        # Cleanup
-        try:
-            os.remove(temp_path)
-        except:
-            pass
-
-# ============================================================================
-# MODE 2: BATCH MODE
-# ============================================================================
-else:  # Batch mode
-    st.subheader("📁 Batch Processing & Computational Breakdown")
+# ═══════════════════════════════════════════
+# BATCH MODE
+# ═══════════════════════════════════════════
+elif st.session_state.mode == "Batch":
+    st.markdown('<span class="sec-hdr">📂 Batch Processing</span>', unsafe_allow_html=True)
+    st.write("Upload multiple audio files — WAV, MP3, OGG, FLAC, M4A")
 
     uploaded_files = st.file_uploader(
-        "Choose multiple audio files",
-        type=["wav", "mp3", "ogg", "flac", "m4a"],
-        accept_multiple_files=True
+        "Upload files", type=["wav","mp3","ogg","flac","m4a"],
+        accept_multiple_files=True, label_visibility="collapsed"
     )
 
     if uploaded_files:
         st.info(f"📁 {len(uploaded_files)} files selected")
 
-        if st.button("▶️ Process All Files", type="primary", use_container_width=True):
-            results = []
-            progress_bar = st.progress(0)
-            status_placeholder = st.empty()
+        if st.button("▶️ Process All Files", use_container_width=True, key="process_batch"):
+            results, batch_data = [], []
+            prog   = st.progress(0)
+            status = st.empty()
+            temp_dir = "./tmp"; os.makedirs(temp_dir, exist_ok=True)
 
-            for idx, uploaded_file in enumerate(uploaded_files):
-                status_placeholder.text(
-                    f"⏳ Processing {idx + 1}/{len(uploaded_files)}: {uploaded_file.name}"
-                )
-                progress_bar.progress((idx + 1) / len(uploaded_files))
+            for idx, uf in enumerate(uploaded_files):
+                status.write(f"Processing **{idx+1}/{len(uploaded_files)}**: {uf.name}")
+                prog.progress((idx+1)/len(uploaded_files))
 
-                temp_dir = "./tmp"
-                os.makedirs(temp_dir, exist_ok=True)
-                temp_path = os.path.join(temp_dir, uploaded_file.name)
-                with open(temp_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
+                temp_path = os.path.join(temp_dir, uf.name)
+                with open(temp_path, "wb") as f: f.write(uf.getbuffer())
 
                 try:
-                    best_song, best_score, best_offsets_list, match_counts, metadata = identify_query_clip_sqlite(
-                        temp_path, db_conn
-                    )
-                    filename_without_ext = os.path.splitext(uploaded_file.name)[0]
-                    prediction = best_song if best_song != "Unknown / No Match" else "UNKNOWN"
+                    best_song, best_score, best_offsets, match_counts, metadata, best_offset = \
+                        identify_query_clip_sqlite(temp_path, db_conn)
+                    matched    = best_song != "Unknown / No Match"
+                    pred_clean = os.path.splitext(best_song if matched else "UNKNOWN")[0]
+                    pos        = f"{best_offset:.1f}s" if best_offset is not None else "N/A"
 
-                    results.append({
-                        "filename": filename_without_ext,
-                        "prediction": prediction
+                    results.append({"filename": os.path.splitext(uf.name)[0], "prediction": pred_clean})
+                    batch_data.append({
+                        "filename": uf.name, "song": best_song,
+                        "matched": matched, "score": best_score,
+                        "position": pos, "offsets": best_offsets,
+                        "metadata": metadata
                     })
-
-                    # Dynamic analytical visualization rendering for each evaluated batch file
-                    with st.expander(f"📊 Signal Analysis Breakdown: {uploaded_file.name}", expanded=False):
-                        st.markdown(
-                            f"**Prediction Matched:** `{prediction}` | **Consensus Peak Score:** `{best_score}`")
-
-                        col_p1, col_p2, col_p3 = st.columns(3)
-
-                        with col_p1:
-                            st.write("🎼 **Spectrogram Plot**")
-                            try:
-                                fig_b1, ax_b1 = plt.subplots(figsize=(4, 2.5))
-                                ax_b1.imshow(
-                                    metadata['spectrogram'], aspect='auto', origin='lower', cmap='magma',
-                                    extent=[metadata['times'][0], metadata['times'][-1], metadata['frequencies'][0],
-                                            metadata['frequencies'][-1]]
-                                )
-                                ax_b1.set_xlabel("Time (s)", fontsize=6)
-                                ax_b1.set_ylabel("Freq (Hz)", fontsize=6)
-                                ax_b1.tick_params(labelsize=6)
-                                st.pyplot(fig_b1)
-                            except Exception as ex:
-                                st.error(f"Render Error: {ex}")
-
-                        with col_p2:
-                            st.write("⭐ **Peak Constellation**")
-                            try:
-                                fig_b2, ax_b2 = plt.subplots(figsize=(4, 2.5))
-                                ax_b2.scatter(metadata['peak_times'], metadata['peak_freqs'], alpha=0.6, s=8,
-                                              color='orange')
-                                ax_b2.set_xlabel("Time (s)", fontsize=6)
-                                ax_b2.set_ylabel("Freq (Hz)", fontsize=6)
-                                ax_b2.tick_params(labelsize=6)
-                                ax_b2.grid(True, alpha=0.2)
-                                st.pyplot(fig_b2)
-                            except Exception as ex:
-                                st.error(f"Render Error: {ex}")
-
-                        with col_p3:
-                            st.write("📈 **Time-Offset Histogram**")
-                            try:
-                                if best_offsets_list and len(best_offsets_list) > 0:
-                                    fig_b3, ax_b3 = plt.subplots(figsize=(4, 2.5))
-                                    ax_b3.hist(best_offsets_list, bins=30, color='steelblue', alpha=0.7)
-                                    ax_b3.set_xlabel("Offset Shift (s)", fontsize=6)
-                                    ax_b3.set_ylabel("Hashes Count", fontsize=6)
-                                    ax_b3.tick_params(labelsize=6)
-                                    ax_b3.grid(True, alpha=0.2)
-                                    st.pyplot(fig_b3)
-                                else:
-                                    st.caption("No consensus distribution match profile found.")
-                            except Exception as ex:
-                                st.error(f"Render Error: {ex}")
-
                 except Exception as e:
-                    filename_without_ext = os.path.splitext(uploaded_file.name)[0]
-                    results.append({
-                        "filename": filename_without_ext,
-                        "prediction": "ERROR"
+                    results.append({"filename": os.path.splitext(uf.name)[0], "prediction": "ERROR"})
+                    batch_data.append({
+                        "filename": uf.name, "song": f"ERROR: {e}",
+                        "matched": False, "score": 0,
+                        "position": "N/A", "offsets": [], "metadata": None
                     })
 
-                try:
-                    os.remove(temp_path)
-                except:
-                    pass
+                try: os.remove(temp_path)
+                except: pass
 
-            status_placeholder.empty()
-            progress_bar.empty()
-
+            prog.empty(); status.empty()
             st.success("✅ Batch processing complete!")
 
-            df_results = pd.DataFrame(results)
-            st.dataframe(df_results, use_container_width=True)
+            # Summary
+            identified = sum(1 for r in results if r['prediction'] not in ['UNKNOWN','ERROR'])
+            errors     = sum(1 for r in results if r['prediction'] == 'ERROR')
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Total Files",  len(results))
+            c2.metric("Identified",   identified)
+            c3.metric("Errors",       errors)
 
-            csv_content = df_results.to_csv(index=False)
-
+            # Table
+            st.markdown('<span class="sec-hdr">Results Table</span>', unsafe_allow_html=True)
+            df_res = pd.DataFrame(results)
+            st.dataframe(df_res, use_container_width=True)
             st.download_button(
-                label="📥 Download results.csv",
-                data=csv_content,
-                file_name="results.csv",
-                mime="text/csv"
+                "📥 Download results.csv",
+                data=df_res.to_csv(index=False),
+                file_name="results.csv", mime="text/csv"
             )
 
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Total Audited Files", len(results))
-            with col2:
-                unknowns = sum(1 for r in results if r['prediction'] in ['UNKNOWN', 'ERROR'])
-                st.metric("Identified Tracks", len(results) - unknowns)
-            with col3:
-                errors = sum(1 for r in results if r['prediction'] == 'ERROR')
-                st.metric("Execution Failures", errors)
+            # Per-file analysis — using columns instead of expander+tabs to avoid rendering issues
+            st.markdown('<span class="sec-hdr">Per-File Analysis</span>', unsafe_allow_html=True)
+
+            for item in batch_data:
+                icon = "✅" if item['matched'] else "❌"
+                with st.expander(f"{icon}  {item['filename']}  →  {item['song']}", expanded=False):
+
+                    # Match info row
+                    if item['matched']:
+                        yt = f"https://www.youtube.com/results?search_query={urllib.parse.quote(item['song'])}"
+                        st.markdown(f"""
+                        <div class="batch-card">
+                            <div class="batch-fname">{item['filename']}</div>
+                            <div class="batch-sname">🎵 {item['song']}</div>
+                            <span class="batch-pos">📍 Matches at ~{item['position']} in reference song</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        st.markdown(f'<a class="yt-btn" style="margin-left:0;" href="{yt}" target="_blank">▶ Watch on YouTube</a><br><br>', unsafe_allow_html=True)
+                    else:
+                        st.warning(f"No match found: {item['song']}")
+
+                    # Visualizations — render directly (no nested tabs to avoid rendering bugs)
+                    if item['metadata'] is not None:
+                        st.markdown('<span class="batch-subhdr">🎼 Spectrogram</span>', unsafe_allow_html=True)
+                        try:
+                            st.pyplot(plot_spectrogram(item['metadata'], f"Spectrogram — {item['filename']}"))
+                        except Exception as e:
+                            st.error(f"Spectrogram error: {e}")
+
+                        st.markdown('<span class="batch-subhdr">⭐ Constellation Map</span>', unsafe_allow_html=True)
+                        try:
+                            st.pyplot(plot_constellation(item['metadata'], f"Constellation — {item['filename']}"))
+                        except Exception as e:
+                            st.error(f"Constellation error: {e}")
+
+                        st.markdown('<span class="batch-subhdr">📈 Offset Histogram</span>', unsafe_allow_html=True)
+                        try:
+                            if item['offsets']:
+                                st.pyplot(plot_histogram(item['offsets'], item['song']))
+                            else:
+                                st.info("No offset data available.")
+                        except Exception as e:
+                            st.error(f"Histogram error: {e}")
+
+# ═══════════════════════════════════════════
+# DATABASE VIEW — constellation maps for every song
+# ═══════════════════════════════════════════
+else:
+    st.markdown('<span class="sec-hdr">🗄️ In The Database</span>', unsafe_allow_html=True)
+
+    song_rows = get_song_list_with_counts()
+
+    if not song_rows:
+        st.warning("⚠️ No songs found in the database.")
+    else:
+        search = st.text_input(
+            "Search songs", placeholder="🔍 Search songs…", label_visibility="collapsed"
+        )
+        if search:
+            filtered = [r for r in song_rows if search.lower() in r[0].lower()]
+        else:
+            filtered = song_rows
+
+        st.markdown(
+            f'<span class="db-grid-label">{len(filtered)} of {len(song_rows)} songs</span>',
+            unsafe_allow_html=True
+        )
+
+        if not filtered:
+            st.info("No songs match your search.")
+        else:
+            cols_per_row = 4
+            with st.spinner("🎨 Rendering constellation maps..."):
+                for i in range(0, len(filtered), cols_per_row):
+                    row_songs = filtered[i:i + cols_per_row]
+                    cols = st.columns(cols_per_row)
+                    for col, (song_name, hash_count) in zip(cols, row_songs):
+                        with col:
+                            thumb = get_constellation_thumb(song_name)
+                            img_html = (
+                                f'<img src="{thumb}" />'
+                                if thumb else
+                                '<div style="height:120px;display:flex;align-items:center;'
+                                'justify-content:center;color:#7d9a7d;font-size:0.75rem;">'
+                                'No data</div>'
+                            )
+                            st.markdown(f"""
+                            <div class="db-card">
+                                {img_html}
+                                <span class="db-card-name">{song_name}</span>
+                                <span class="db-card-hashes">{hash_count:,} hashes</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            st.write("")
