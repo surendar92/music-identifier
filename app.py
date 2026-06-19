@@ -262,17 +262,39 @@ section[data-testid="stSidebar"] > div > div > button {
     background: transparent !important; 
     padding-top: 1rem !important;
 }
-
 /* ── FILE UPLOADER ── */
+/* Targets the outer block wrapper container */
 [data-testid="stFileUploader"] {
     background: #ffffff !important; 
     border-radius: 12px !important;
     border: 2px dashed #b8d4b0 !important;
     overflow: hidden !important;
-    padding: 10px !important;
+    padding: 16px !important;
 }
 
-/* Force the label text inside the file uploader area to be clean grey/black and readable */
+/* Fixes the internal flex layout engine of the dropzone area */
+[data-testid="stFileUploaderDropzone"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 24px !important;
+    background-color: #f8faf6 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+}
+
+/* Forces the instructions text block away from the button */
+[data-testid="stFileUploaderDropzoneInstructions"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    flex-grow: 1 !important;
+}
+
+/* Adjusts colors for maximum readability against light backdrops */
 [data-testid="stFileUploaderDropzoneInstructions"] span {
     color: #2d5a27 !important;
     font-weight: 600 !important;
@@ -282,33 +304,20 @@ section[data-testid="stSidebar"] > div > div > button {
     color: #6b7f6b !important;
 }
 
-/* Fix the button inside the file uploader dropzone */
-[data-testid="stFileUploaderDropzone"] button {
+/* Completely isolates the browse files button styling */
+[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"] {
     background: #162316 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 6px 14px !important;
+    padding: 8px 16px !important;
     font-weight: 600 !important;
+    white-space: nowrap !important;
+    margin-left: auto !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button:hover {
+[data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"]:hover {
     background: #2d5a27 !important;
-}
-
-/* Ensure the dropzone layout aligns properly without overlapping */
-[data-testid="stFileUploaderDropzone"] {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
-    row-gap: 10px !important;
-    padding: 14px 18px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    background-color: #f8faf6 !important;
-    border-radius: 8px !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
