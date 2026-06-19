@@ -498,7 +498,7 @@ if st.session_state.mode == "Single":
             pass
 
 # ============================================================================
-# MODE 2: BATCH MODE (UPGRADED WITH DYNAMIC VISUALIZATIONS)
+# MODE 2: BATCH MODE (UPGRADED WITH CSV GENERATION)
 # ============================================================================
 else:  # Batch mode
     st.subheader("📁 Batch Processing & Analytics")
@@ -514,6 +514,7 @@ else:  # Batch mode
 
         if st.button("▶️ Process All Files & Generate Graphics", type="primary", use_container_width=True):
             results = []
+            csv_data = []  # To hold exact columns required: filename, prediction
             progress_bar = st.progress(0)
             status_placeholder = st.empty()
 
@@ -529,6 +530,8 @@ else:  # Batch mode
                 with open(temp_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
+                filename_without_ext = os.path.splitext(uploaded_file.name)[0]
+
                 try:
                     # Run full analytical query to capture plotting matrices
                     best_song, highest_peak_count, best_offsets_list, match_counts, metadata = identify_query_clip_sqlite(
@@ -536,10 +539,9 @@ else:  # Batch mode
                         db_conn
                     )
 
-                    filename_without_ext = os.path.splitext(uploaded_file.name)[0]
                     prediction = best_song if best_song != "Unknown / No Match" else "UNKNOWN"
 
-                    # Track data properties in the loop state dictionary
+                    # Track data properties for UI rendering
                     results.append({
                         "filename": filename_without_ext,
                         "prediction": prediction,
@@ -549,8 +551,13 @@ else:  # Batch mode
                         "status": "SUCCESS"
                     })
 
+                    # Track data properties for the required evaluation CSV format
+                    csv_data.append({
+                        "filename": filename_without_ext,
+                        "prediction": prediction
+                    })
+
                 except Exception as e:
-                    filename_without_ext = os.path.splitext(uploaded_file.name)[0]
                     results.append({
                         "filename": filename_without_ext,
                         "prediction": "ERROR",
@@ -558,6 +565,11 @@ else:  # Batch mode
                         "offsets": [],
                         "metadata": None,
                         "status": f"FAILED: {e}"
+                    })
+
+                    csv_data.append({
+                        "filename": filename_without_ext,
+                        "prediction": "ERROR"
                     })
 
                 try:
@@ -569,6 +581,27 @@ else:  # Batch mode
             progress_bar.empty()
 
             st.success("✅ Batch processing complete!")
+
+            # ----------------------------------------------------------------
+            # CSV GENERATION & EXPORT
+            # ------------------------------------------------------------ ----
+            df_results = pd.DataFrame(csv_data)
+            # Ensure strict structure compliance: exactly columns [filename, prediction]
+            df_results = df_results[["filename", "prediction"]]
+            csv_filename = "results.csv"
+            df_results.to_csv(csv_filename, index=False)
+
+            st.markdown("### 📥 Download Results")
+            st.info(f"💾 Generated `{csv_filename}` successfully in your local workspace directory.")
+
+            with open(csv_filename, "rb") as file:
+                st.download_button(
+                    label="📥 Download results.csv for Evaluation",
+                    data=file,
+                    file_name=csv_filename,
+                    mime="text/csv",
+                    use_container_width=True
+                )
 
             # 1. Summary Cards Matrix
             col1, col2, col3 = st.columns(3)
@@ -647,7 +680,6 @@ else:  # Batch mode
                             plt.close(fig)
                         else:
                             st.info("No delta time distribution offsets captured.")
-
 # ==============================================================================
 # MODERN SIDEBAR: DATABASE STATUS
 # ==============================================================================
