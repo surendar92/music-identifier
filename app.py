@@ -472,20 +472,78 @@ else:  # Batch mode
                 errors = sum(1 for r in results if r['prediction'] == 'ERROR')
                 st.metric("Errors", errors)
 
-# ============================================================================
-# SIDEBAR INFO
-# ============================================================================
-st.sidebar.markdown("---")
-st.sidebar.markdown("### ⚡ SQLite Backend")
-st.sidebar.markdown("""
-**This app uses SQLite for:**
-- ⚡ Fast indexed queries
-- 💾 No RAM overhead
-- 📊 Scalable to millions of hashes
-- 🚀 Production-ready
+# ==============================================================================
+# MODERN SIDEBAR: DATABASE STATUS
+# ==============================================================================
+with st.sidebar:
+    st.markdown("### 📊 Database Status")
 
-**Your fingerprinting code:**
-- `get_constellation_peaks()`
-- `generate_song_hashes()`
-- `identify_query_clip()`
-""")
+    # Get stats from your existing backend helper
+    num_songs, unique_hashes, total_entries = get_db_stats()
+    db_size = os.path.getsize("music_database.db") / (1024 * 1024)
+
+    # Create a 2x2 layout structure within the sidebar
+    row1_col1, row1_col2 = st.columns(2)
+    row2_col1, row2_col2 = st.columns(2)
+
+    with row1_col1:
+        st.markdown(
+            f"""
+            <div style="background-color: #1E2235; padding: 10px; border-radius: 8px; border: 1px solid #2D3142; margin-bottom: 10px;">
+                <p style="margin:0; font-size:12px; color:#A3A8B4; text-transform:uppercase; font-weight:600;">Songs</p>
+                <h3 style="margin:0; padding-top:4px; font-size:22px; color:#FFFFFF;">{num_songs:,}</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with row1_col2:
+        st.markdown(
+            f"""
+            <div style="background-color: #1E2235; padding: 10px; border-radius: 8px; border: 1px solid #2D3142; margin-bottom: 10px;">
+                <p style="margin:0; font-size:12px; color:#A3A8B4; text-transform:uppercase; font-weight:600;">DB Size</p>
+                <h3 style="margin:0; padding-top:4px; font-size:22px; color:#00D1B2;">{db_size:.1f} MB</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with row2_col1:
+        st.markdown(
+            f"""
+            <div style="background-color: #1E2235; padding: 10px; border-radius: 8px; border: 1px solid #2D3142;">
+                <p style="margin:0; font-size:11px; color:#A3A8B4; text-transform:uppercase; font-weight:600;">Hashes</p>
+                <h3 style="margin:0; padding-top:4px; font-size:18px; color:#FFFFFF;">{unique_hashes:,}</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with row2_col2:
+        st.markdown(
+            f"""
+            <div style="background-color: #1E2235; padding: 10px; border-radius: 8px; border: 1px solid #2D3142;">
+                <p style="margin:0; font-size:11px; color:#A3A8B4; text-transform:uppercase; font-weight:600;">Entries</p>
+                <h3 style="margin:0; padding-top:4px; font-size:18px; color:#FFFFFF;">{total_entries:,}</h3>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
+    # Elegant Backend Status Info Group
+    st.markdown("### ⚡ Backend Info")
+    st.success("SQLite Database Connected", icon="🔌")
+
+    st.markdown(
+        """
+        <div style="background-color: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 8px; border-left: 3px solid #FF4B4B;">
+            <p style="margin:0; font-size:13px; color:#E2E8F0; line-height: 1.5;">
+                ⚡ <b>Fast indexed queries</b><br>
+                💾 <b>No RAM overhead</b>
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
