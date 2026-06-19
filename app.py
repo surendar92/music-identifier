@@ -50,23 +50,22 @@ st.markdown("""
 
 /* ── SIDEBAR COLLAPSE ARROW — always visible ── */
 [data-testid="collapsedControl"] {
-    background: #162316 !important;
+    display: flex !important;
+    visibility: visible !important;
+    background-color: #162316 !important;
+    position: fixed !important;
+    top: 2.5rem !important;
+    left: 0 !important;
+    z-index: 999999 !important;
     border-radius: 0 8px 8px 0 !important;
     box-shadow: 3px 0 10px rgba(0,0,0,0.3) !important;
-    top: 50% !important; height: 60px !important;
-    display: flex !important; align-items: center !important;
+    transition: background 0.2s;
 }
-[data-testid="collapsedControl"]:hover { background: #1e3a1e !important; }
-[data-testid="collapsedControl"] svg { color: white !important; fill: white !important; stroke: white !important; }
-
-/* Sidebar expand/collapse button */
-button[data-testid="baseButton-headerNoPadding"] {
-    color: white !important;
+[data-testid="collapsedControl"] svg {
+    fill: #ffffff !important;
+    color: #ffffff !important;
 }
-section[data-testid="stSidebar"] > div > div > button {
-    color: white !important;
-    background: transparent !important;
-}
+[data-testid="collapsedControl"]:hover { background: #2d5a27 !important; }
 
 /* ── SIDEBAR LOGO ── */
 .sb-logo {
@@ -156,8 +155,8 @@ section[data-testid="stSidebar"] > div > div > button {
 .mode-card.active h3 { color: #162316 !important; }
 
 /* ── ALL MAIN CONTENT TEXT = BLACK ── */
-.main p, .main span, .main div, .main label,
-.main h1, .main h2, .main h3, .main h4 {
+.main p, .main h1, .main h2, .main h3, .main h4, .main label, 
+.main [data-testid="stMarkdownContainer"] > p {
     color: #0f1f0f !important;
 }
 
@@ -267,62 +266,44 @@ section[data-testid="stSidebar"] > div > div > button {
     background: #ffffff !important; 
     border-radius: 12px !important;
     border: 2px dashed #b8d4b0 !important;
-    overflow: hidden !important;
     padding: 16px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
     display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 24px !important;
     background-color: #f8faf6 !important;
     border-radius: 8px !important;
     padding: 12px 16px !important;
 }
 
-[data-testid="stFileUploaderDropzoneInstructions"] {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-    flex-grow: 1 !important;
-}
-
-[data-testid="stFileUploaderDropzoneInstructions"] span,
+/* Force instructions area text to stay dark green */
 [data-testid="stFileUploaderDropzoneInstructions"] div {
     color: #2d5a27 !important;
     font-weight: 600 !important;
 }
-
 [data-testid="stFileUploaderDropzoneInstructions"] small {
     color: #6b7f6b !important;
 }
 
-/* Force the button background and structural alignment */
+/* The Browse Files Button */
 [data-testid="stFileUploaderDropzone"] button {
-    background: #162316 !important;
+    background-color: #162316 !important;
     border: none !important;
     border-radius: 6px !important;
     padding: 8px 20px !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-    min-width: 140px !important;
 }
 
-/* THE FIX: Stop the global dark text rule from turning button text black */
-[data-testid="stFileUploaderDropzone"] button,
-[data-testid="stFileUploaderDropzone"] button *,
-[data-testid="stFileUploaderDropzone"] button div,
-[data-testid="stFileUploaderDropzone"] button span,
-[data-testid="stFileUploaderDropzone"] button p {
+/* Ensure the text and icon inside the button stay white */
+[data-testid="stFileUploaderDropzone"] button * {
     color: #ffffff !important;
+    fill: #ffffff !important;
+    font-weight: 600 !important;
 }
 
 [data-testid="stFileUploaderDropzone"] button:hover {
-    background: #2d5a27 !important;
+    background-color: #2d5a27 !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
