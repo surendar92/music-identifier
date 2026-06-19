@@ -350,15 +350,41 @@ if st.session_state.mode == "Single":
                     st.write("")
                     st.markdown("### 📋 Top 5 Match Candidates")
 
-                    # Loop through match_counts to dynamically construct the HTML table rows
+                    # Loop through the SAFE local variable instead of st.session_state directly
                     table_rows = ""
-                    for i, (song_name, count) in enumerate(st.session_state.match_counts[:5]):
-                        rank = i + 1
+                    if isinstance(cached_matches, list) and len(cached_matches) > 0:
+                        for i, item in enumerate(cached_matches[:5]):
+                            rank = i + 1
 
-                        # Apply special visual highlight rules for the absolute winner (#1)
-                        if rank == 1:
-                            row_style = 'style="border-bottom: 1px solid #1E2235; background-color: rgba(0, 209, 178, 0.05);"'
-                            title_display = f"🥇 <b>{song_name}</b>"
+                            # Guard against unexpected tuple structures
+                            try:
+                                song_name, count = item
+                            except (ValueError, TypeError):
+                                continue
+
+                            # Apply special visual highlight rules for the absolute winner (#1)
+                            if rank == 1:
+                                row_style = 'style="border-bottom: 1px solid #1E2235; background-color: rgba(0, 209, 178, 0.05);"'
+                                title_display = f"🥇 <b>{song_name}</b>"
+                                count_style = 'style="padding: 12px; text-align: right; font-weight: 700; color:#00D1B2;"'
+                            else:
+                                row_style = 'style="border-bottom: 1px solid #1E2235;"'
+                                title_display = song_name
+                                count_style = 'style="padding: 12px; text-align: right; color:#E2E8F0;"'
+
+                            table_rows += f"""
+                                        <tr {row_style}>
+                                            <td style="padding: 12px; font-weight: 600; color: {'#00D1B2' if rank == 1 else '#A3A8B4'};">#{rank}</td>
+                                            <td style="padding: 12px; color: {'#FFFFFF' if rank == 1 else '#E2E8F0'};">{title_display}</td>
+                                            <td {count_style}>{count:,}</td>
+                                        </tr>
+                                        """
+                    else:
+                        table_rows = """
+                                    <tr>
+                                        <td colspan="3" style="padding: 12px; text-align: center; color: #A3A8B4;">No match records available in current state tracker.</td>
+                                    </tr>
+                                    """
         # ==============================================================================
         # TAB 2: SPECTROGRAM
         # ==============================================================================
