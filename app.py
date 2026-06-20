@@ -84,35 +84,23 @@ html, body, [class*="css"] {
 }
 
 /* ── COLLAPSED CONTROL (The arrow tab when sidebar is hidden) ── */
-[data-testid="collapsedControl"] {
+div[data-testid="collapsedControl"] {
+    display: flex !important;
     visibility: visible !important;
-    display: flex !important;
     opacity: 1 !important;
-    pointer-events: auto !important;
-    z-index: 999999 !important;
-    background-color: #162316 !important;
+    background-color: #162316 !important; /* Dark green block background */
     border-radius: 0 8px 8px 0 !important;
-    box-shadow: 3px 0 12px rgba(0,0,0,0.4) !important;
-    padding: 12px 10px !important;
-    cursor: pointer !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: background 0.2s !important;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.2) !important;
+    left: 0 !important;
+    top: 10px !important;
+    padding: 8px 12px !important;
 }
-[data-testid="collapsedControl"]:hover {
-    background: #2d5a27 !important;
-}
-[data-testid="collapsedControl"] [data-testid="stIconMaterial"],
-[data-testid="collapsedControl"] svg {
-    font-family: 'Material Symbols Rounded' !important;
-    fill: #000000 !important;
+
+div[data-testid="collapsedControl"] button, 
+div[data-testid="collapsedControl"] span, 
+div[data-testid="collapsedControl"] svg {
     color: #ffffff !important;
-    font-size: 22px !important;
-    width: 22px !important;
-    height: 22px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    fill: #ffffff !important;
 }
 
 /* ── SIDEBAR LOGO ── */
@@ -334,37 +322,14 @@ html, body, [class*="css"] {
     display: none !important;
 }
 
-/* ── FILE UPLOADER BUTTON FIX ── */
+/* Perfect alignment for the text inside the button */
 [data-testid="stFileUploaderDropzone"] button {
-    background-color: #162316 !important;
-    color: #ffffff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 10px 24px !important;
-    font-size: 0.88rem !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0 !important;
+    text-align: center !important;
 }
 
-/* Hover */
-[data-testid="stFileUploaderDropzone"] button:hover {
-    background-color: #2d5a27 !important;
-}
-
-/* Hide every icon/material/upload glyph inside the button */
-[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"],
-[data-testid="stFileUploaderDropzone"] button .material-symbols-rounded,
-[data-testid="stFileUploaderDropzone"] button svg,
-[data-testid="stFileUploaderDropzone"] button span[aria-hidden="true"] {
-    display: none !important;
-}
-
-/* Keep only the actual label visible */
 [data-testid="stFileUploaderDropzone"] button p,
 [data-testid="stFileUploaderDropzone"] button span,
 [data-testid="stFileUploaderDropzone"] button div {
@@ -373,14 +338,9 @@ html, body, [class*="css"] {
     font-family: 'Satoshi', 'Inter', sans-serif !important;
     margin: 0 !important;
     padding: 0 !important;
-    line-height: 1 !important;
-}
-/* File size/format hint */
-[data-testid="stFileUploaderDropzoneInstructions"] small {
-    color: #6b7f6b !important;
-    font-size: 0.78rem !important;
-    display: block !important;
-    margin-top: 6px !important;
+    line-height: 1.2 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
