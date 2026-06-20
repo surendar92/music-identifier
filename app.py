@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Music Identifier",
     page_icon="🎵",
     layout="wide",
-    initial_sidebar_state=st.session_state.get("sidebar_state", "expanded")
+    initial_sidebar_state="expanded"
 )
 
 st.markdown("""
@@ -286,50 +286,43 @@ st.markdown("""
     background-color: #f8faf6 !important;
     border-radius: 8px !important;
     border: none !important;
-    padding: 20px 24px !important;
+    padding: 24px !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 12px !important;
+    gap: 10px !important;
+    position: relative !important;
 }
 
-/* Instructions text */
-[data-testid="stFileUploaderDropzoneInstructions"] {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 4px !important;
+/* Hide the "Drag and drop" text label — it duplicates the button text */
+[data-testid="stFileUploaderDropzoneInstructions"] > div > span {
+    display: none !important;
 }
-[data-testid="stFileUploaderDropzoneInstructions"] div,
-[data-testid="stFileUploaderDropzoneInstructions"] span {
-    color: #2d5a27 !important;
-    font-weight: 600 !important;
-    font-size: 0.9rem !important;
-}
+
+/* Show only the small format hint below */
 [data-testid="stFileUploaderDropzoneInstructions"] small {
     color: #6b7f6b !important;
     font-weight: 400 !important;
+    font-size: 0.78rem !important;
 }
 
-/* Browse Files button — target only the real button, not any pseudo-label */
-[data-testid="stFileUploaderDropzone"] button[kind="secondary"],
-[data-testid="stFileUploaderDropzone"] > button {
+/* Style the actual Browse Files button */
+[data-testid="stFileUploaderDropzone"] button {
     background-color: #162316 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 8px 22px !important;
-    font-size: 0.85rem !important;
+    padding: 9px 26px !important;
+    font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    min-width: 130px !important;
+    order: -1 !important;
 }
-[data-testid="stFileUploaderDropzone"] button[kind="secondary"]:hover,
-[data-testid="stFileUploaderDropzone"] > button:hover {
+[data-testid="stFileUploaderDropzone"] button:hover {
     background-color: #2d5a27 !important;
 }
-/* Keep inner spans white, but avoid styling hidden file inputs */
+[data-testid="stFileUploaderDropzone"] button p,
 [data-testid="stFileUploaderDropzone"] button span {
     color: #ffffff !important;
     font-weight: 600 !important;
@@ -649,10 +642,6 @@ def plot_histogram(offsets, song_name):
 # ═══════════════════════════════════════════
 if "mode" not in st.session_state:
     st.session_state.mode = "Single"
-
-# Track sidebar visibility state
-if "sidebar_state" not in st.session_state:
-    st.session_state.sidebar_state = "expanded"
 
 # ═══════════════════════════════════════════
 # SIDEBAR
