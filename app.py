@@ -48,24 +48,37 @@ st.markdown("""
     color: #ffffff !important;
 }
 
-/* ── SIDEBAR COLLAPSE ARROW — always visible ── */
+/* ── SIDEBAR COLLAPSE ARROW — always visible, compact & professional ── */
 [data-testid="collapsedControl"] {
     display: flex !important;
     visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
     background-color: #162316 !important;
     position: fixed !important;
-    top: 2.5rem !important;
+    top: 50% !important;
     left: 0 !important;
+    transform: translateY(-50%) !important;
     z-index: 999999 !important;
-    border-radius: 0 8px 8px 0 !important;
-    box-shadow: 3px 0 10px rgba(0,0,0,0.3) !important;
-    transition: background 0.2s;
+    width: 20px !important;
+    height: 48px !important;
+    border-radius: 0 6px 6px 0 !important;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.35) !important;
+    transition: background 0.2s, width 0.2s !important;
+    cursor: pointer !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+[data-testid="collapsedControl"]:hover {
+    background: #2d5a27 !important;
+    width: 24px !important;
 }
 [data-testid="collapsedControl"] svg {
     fill: #ffffff !important;
     color: #ffffff !important;
+    width: 12px !important;
+    height: 12px !important;
 }
-[data-testid="collapsedControl"]:hover { background: #2d5a27 !important; }
 
 /* ── SIDEBAR LOGO ── */
 .sb-logo {
@@ -263,47 +276,63 @@ st.markdown("""
 }
 /* ── FILE UPLOADER ── */
 [data-testid="stFileUploader"] {
-    background: #ffffff !important; 
+    background: #ffffff !important;
     border-radius: 12px !important;
     border: 2px dashed #b8d4b0 !important;
     padding: 16px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
     background-color: #f8faf6 !important;
     border-radius: 8px !important;
-    padding: 12px 16px !important;
+    border: none !important;
+    padding: 20px 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 12px !important;
 }
 
-/* Force instructions area text to stay dark green */
-[data-testid="stFileUploaderDropzoneInstructions"] div {
+/* Instructions text */
+[data-testid="stFileUploaderDropzoneInstructions"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+[data-testid="stFileUploaderDropzoneInstructions"] div,
+[data-testid="stFileUploaderDropzoneInstructions"] span {
     color: #2d5a27 !important;
     font-weight: 600 !important;
+    font-size: 0.9rem !important;
 }
 [data-testid="stFileUploaderDropzoneInstructions"] small {
     color: #6b7f6b !important;
+    font-weight: 400 !important;
 }
 
-/* The Browse Files Button */
-[data-testid="stFileUploaderDropzone"] button {
+/* Browse Files button — target only the real button, not any pseudo-label */
+[data-testid="stFileUploaderDropzone"] button[kind="secondary"],
+[data-testid="stFileUploaderDropzone"] > button {
     background-color: #162316 !important;
+    color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 8px 20px !important;
-}
-
-/* Ensure the text and icon inside the button stay white */
-[data-testid="stFileUploaderDropzone"] button * {
-    color: #ffffff !important;
-    fill: #ffffff !important;
+    padding: 8px 22px !important;
+    font-size: 0.85rem !important;
     font-weight: 600 !important;
+    cursor: pointer !important;
+    min-width: 130px !important;
 }
-
-[data-testid="stFileUploaderDropzone"] button:hover {
+[data-testid="stFileUploaderDropzone"] button[kind="secondary"]:hover,
+[data-testid="stFileUploaderDropzone"] > button:hover {
     background-color: #2d5a27 !important;
+}
+/* Keep inner spans white, but avoid styling hidden file inputs */
+[data-testid="stFileUploaderDropzone"] button span {
+    color: #ffffff !important;
+    font-weight: 600 !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
@@ -402,15 +431,7 @@ header[data-testid="stHeader"] [data-testid="stToolbar"] {
     visibility: hidden !important;
 }
 
-/* Force the "open sidebar" arrow to always be visible & clickable,
-   even after the sidebar has been collapsed */
-[data-testid="collapsedControl"] {
-    visibility: visible !important;
-    display: flex !important;
-    opacity: 1 !important;
-    z-index: 999999 !important;
-    pointer-events: auto !important;
-}
+/* collapsedControl styles defined above */
 
 /* ── DATABASE VIEW — dark constellation thumbnail cards ── */
 .db-grid-label {
@@ -705,11 +726,6 @@ st.markdown("""
     <p>Identify songs using spectrogram fingerprinting — SQLite powered</p>
 </div>
 """, unsafe_allow_html=True)
-
-btn_label = "Hide Sidebar 👈" if st.session_state.sidebar_state == "expanded" else "Show Sidebar 👉"
-if st.button(btn_label, key="sidebar_toggle_trigger"):
-    st.session_state.sidebar_state = "collapsed" if st.session_state.sidebar_state == "expanded" else "expanded"
-    st.rerun()
 
 # Mode cards
 col1, col2, col3 = st.columns(3)
