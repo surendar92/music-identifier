@@ -565,7 +565,7 @@ function fixUI() {
 
     // 4. Fix collapsed control icon color
     document.querySelectorAll('[data-testid="collapsedControl"] [data-testid="stIconMaterial"]').forEach(el => {
-        el.style.color = '#ffffff';
+        el.style.color = '#000000';
         el.style.fontFamily = 'Material Symbols Rounded';
     });
 
