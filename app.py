@@ -892,8 +892,6 @@ if st.session_state.mode == "Single":
             if best_song != "Unknown / No Match":
                 pos = f"{best_offset:.1f}s" if best_offset is not None else "N/A"
                 yt  = f"https://www.youtube.com/results?search_query={urllib.parse.quote(best_song)}"
-                if pos<0:
-                    pos=0
                 st.markdown(f"""
                 <div class="result-card">
                     <span class="result-label">◈ IDENTIFIED SONG</span>
