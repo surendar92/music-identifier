@@ -331,7 +331,7 @@ html, body, [class*="css"] {
     display: none !important;
 }
 
-/* Style the Browse Files button */
+/* ── FILE UPLOADER BUTTON FIX ── */
 [data-testid="stFileUploaderDropzone"] button {
     background-color: #162316 !important;
     color: #ffffff !important;
@@ -341,19 +341,30 @@ html, body, [class*="css"] {
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     gap: 0 !important;
 }
+
+/* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
     background-color: #2d5a27 !important;
 }
 
-/* Hide the material icon span inside the upload button (shows as "upload" text when font missing) */
-[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"] {
+/* Hide every icon/material/upload glyph inside the button */
+[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"],
+[data-testid="stFileUploaderDropzone"] button .material-symbols-rounded,
+[data-testid="stFileUploaderDropzone"] button svg,
+[data-testid="stFileUploaderDropzone"] button span[aria-hidden="true"] {
     display: none !important;
 }
-/* Make the button text white */
+
+/* Keep only the actual label visible */
 [data-testid="stFileUploaderDropzone"] button p,
-[data-testid="stFileUploaderDropzone"] button > span:not([data-testid="stIconMaterial"]) {
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploaderDropzone"] button div {
     color: #ffffff !important;
     font-weight: 600 !important;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
@@ -390,9 +401,43 @@ html, body, [class*="css"] {
 /* ── EXPANDER ── */
 .streamlit-expanderHeader,
 [data-testid="stExpander"] summary {
-    background: #ffffff !important; border-radius: 10px !important;
-    border: 1px solid #e2e8dc !important; font-weight: 600 !important;
+    background: #ffffff !important;
+    border-radius: 10px !important;
+    border: 1px solid #e2e8dc !important;
+    font-weight: 600 !important;
     color: #0f1f0f !important;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
+    line-height: 1.35 !important;
+}
+
+/* Remove the broken default triangle/marker text that overlaps in batch mode */
+[data-testid="stExpander"] summary::-webkit-details-marker {
+    display: none !important;
+}
+[data-testid="stExpander"] summary::marker {
+    content: "" !important;
+}
+
+/* Hide any material/icon glyph Streamlit injects into expander header */
+[data-testid="stExpander"] summary [data-testid="stIconMaterial"],
+[data-testid="stExpander"] summary .material-symbols-rounded,
+[data-testid="stExpander"] summary svg,
+[data-testid="stExpander"] summary span[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Make sure the expander title text sits cleanly and doesn't collide */
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span,
+[data-testid="stExpander"] summary div {
+    color: #0f1f0f !important;
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+    margin: 0 !important;
+    line-height: 1.35 !important;
 }
 .streamlit-expanderContent,
 [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
@@ -492,23 +537,41 @@ audio { border-radius: 8px !important; width: 100%; }
 </style>
 <script>
 function fixUI() {
-    // 1. Hide the material icon span inside the upload button (renders as "upload" text)
-    document.querySelectorAll('[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"]').forEach(el => {
+    // 1. Hide every upload icon/material glyph inside the uploader button
+    document.querySelectorAll(`
+        [data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"],
+        [data-testid="stFileUploaderDropzone"] button .material-symbols-rounded,
+        [data-testid="stFileUploaderDropzone"] button svg,
+        [data-testid="stFileUploaderDropzone"] button span[aria-hidden="true"]
+    `).forEach(el => {
         el.style.display = 'none';
     });
+
     // 2. Hide the "Drag and drop" instruction text span
     document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"] > div > span').forEach(el => {
         el.style.display = 'none';
     });
+
     // 3. Fix sidebar collapse button icon color
     document.querySelectorAll('[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"]').forEach(el => {
         el.style.color = 'rgba(255,255,255,0.8)';
         el.style.fontFamily = 'Material Symbols Rounded';
     });
+
     // 4. Fix collapsed control icon color
     document.querySelectorAll('[data-testid="collapsedControl"] [data-testid="stIconMaterial"]').forEach(el => {
         el.style.color = '#ffffff';
         el.style.fontFamily = 'Material Symbols Rounded';
+    });
+
+    // 5. Hide broken expander header glyphs/markers in batch analysis
+    document.querySelectorAll(`
+        [data-testid="stExpander"] summary [data-testid="stIconMaterial"],
+        [data-testid="stExpander"] summary .material-symbols-rounded,
+        [data-testid="stExpander"] summary svg,
+        [data-testid="stExpander"] summary span[aria-hidden="true"]
+    `).forEach(el => {
+        el.style.display = 'none';
     });
 }
 const _observer = new MutationObserver(fixUI);
