@@ -83,17 +83,17 @@ html, body, [class*="css"] {
     font-size: 20px !important;
 }
 
-/* ── COLLAPSED CONTROL (the arrow tab when sidebar is hidden) ── */
+/* ── COLLAPSED CONTROL (The arrow tab when sidebar is hidden) ── */
 [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
     opacity: 1 !important;
     pointer-events: auto !important;
     z-index: 999999 !important;
-    background-color: #162316 !important;
+    background-color: #162316 !important; /* Keep it dark green so the white arrow pops */
     border-radius: 0 8px 8px 0 !important;
     box-shadow: 3px 0 12px rgba(0,0,0,0.4) !important;
-    padding: 12px 6px !important;
+    padding: 12px 10px !important;
     cursor: pointer !important;
     align-items: center !important;
     justify-content: center !important;
@@ -107,9 +107,12 @@ html, body, [class*="css"] {
     font-family: 'Material Symbols Rounded' !important;
     fill: #ffffff !important;
     color: #ffffff !important;
-    font-size: 18px !important;
-    width: 18px !important;
-    height: 18px !important;
+    font-size: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 /* ── SIDEBAR LOGO ── */
@@ -285,7 +288,7 @@ html, body, [class*="css"] {
     background: #ffffff !important; 
     border-radius: 10px !important;
     padding: 6px !important; 
-    gap: 20px !important; /* 👈 Increased from 3px to 20px for clear breathing room */
+    gap: 20px !important;
     border: 1px solid #e2e8dc !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
 }
@@ -295,8 +298,8 @@ html, body, [class*="css"] {
     border-radius: 7px !important; 
     font-size: 0.83rem !important; 
     font-weight: 600 !important;
-    padding-left: 16px !important;  /* 👈 Added horizontal internal padding */
-    padding-right: 16px !important; /* 👈 Added horizontal internal padding */
+    padding-left: 16px !important;  
+    padding-right: 16px !important; 
 }
 .stTabs [aria-selected="true"] {
     background: #162316 !important; 
@@ -306,6 +309,7 @@ html, body, [class*="css"] {
     background: transparent !important; 
     padding-top: 1rem !important;
 }
+
 /* ── FILE UPLOADER ── */
 [data-testid="stFileUploader"] {
     background: #ffffff !important;
@@ -341,11 +345,9 @@ html, body, [class*="css"] {
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0 !important;
 }
 
 /* Hover */
@@ -361,13 +363,16 @@ html, body, [class*="css"] {
     display: none !important;
 }
 
-/* Keep only the actual label visible */
+/* Perfect alignment for the text inside the button */
 [data-testid="stFileUploaderDropzone"] button p,
 [data-testid="stFileUploaderDropzone"] button span,
 [data-testid="stFileUploaderDropzone"] button div {
     color: #ffffff !important;
     font-weight: 600 !important;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 /* File size/format hint */
@@ -377,6 +382,7 @@ html, body, [class*="css"] {
     display: block !important;
     margin-top: 6px !important;
 }
+
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
     border-radius: 10px !important; overflow: hidden;
@@ -406,7 +412,6 @@ html, body, [class*="css"] {
     border: 1px solid #e2e8dc !important;
     font-weight: 600 !important;
     color: #0f1f0f !important;
-
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
@@ -414,15 +419,9 @@ html, body, [class*="css"] {
     line-height: 1.35 !important;
 }
 
-/* Remove the broken default triangle/marker text that overlaps in batch mode */
-[data-testid="stExpander"] summary::-webkit-details-marker {
-    display: none !important;
-}
-[data-testid="stExpander"] summary::marker {
-    content: "" !important;
-}
+[data-testid="stExpander"] summary::-webkit-details-marker { display: none !important; }
+[data-testid="stExpander"] summary::marker { content: "" !important; }
 
-/* Hide any material/icon glyph Streamlit injects into expander header */
 [data-testid="stExpander"] summary [data-testid="stIconMaterial"],
 [data-testid="stExpander"] summary .material-symbols-rounded,
 [data-testid="stExpander"] summary svg,
@@ -430,7 +429,6 @@ html, body, [class*="css"] {
     display: none !important;
 }
 
-/* Make sure the expander title text sits cleanly and doesn't collide */
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span,
 [data-testid="stExpander"] summary div {
@@ -447,9 +445,6 @@ html, body, [class*="css"] {
     padding: 16px !important;
 }
 
-/* Force ALL text inside an expander (markdown, bold, plain) to be dark —
-   this is what makes the Spectrogram/Constellation/Histogram labels
-   and any other expander text visible instead of invisible/low-contrast */
 [data-testid="stExpander"] p,
 [data-testid="stExpander"] span,
 [data-testid="stExpander"] div,
@@ -464,8 +459,6 @@ html, body, [class*="css"] {
     font-family: 'Satoshi', 'Inter', sans-serif !important;
 }
 
-/* Dedicated sub-section label style for Spectrogram / Constellation /
-   Histogram headings inside the Per-File Analysis expanders */
 .batch-subhdr {
     display: block;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
@@ -496,9 +489,7 @@ header[data-testid="stHeader"] {
     z-index: 999 !important;
 }
 
-/* sidebar and collapsedControl styles defined above */
-
-/* ── DATABASE VIEW — dark constellation thumbnail cards ── */
+/* ── DATABASE VIEW ── */
 .db-grid-label {
     font-size: 0.68rem; font-weight: 700; color: #6b7f6b !important;
     letter-spacing: 3px; text-transform: uppercase; margin: 4px 0 14px;
@@ -535,52 +526,6 @@ header[data-testid="stHeader"] {
 /* ── AUDIO PLAYER ── */
 audio { border-radius: 8px !important; width: 100%; }
 </style>
-<script>
-function fixUI() {
-    // 1. Hide every upload icon/material glyph inside the uploader button
-    document.querySelectorAll(`
-        [data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"],
-        [data-testid="stFileUploaderDropzone"] button .material-symbols-rounded,
-        [data-testid="stFileUploaderDropzone"] button svg,
-        [data-testid="stFileUploaderDropzone"] button span[aria-hidden="true"]
-    `).forEach(el => {
-        el.style.display = 'none';
-    });
-
-    // 2. Hide the "Drag and drop" instruction text span
-    document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"] > div > span').forEach(el => {
-        el.style.display = 'none';
-    });
-
-    // 3. Fix sidebar collapse button icon color
-    document.querySelectorAll('[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"]').forEach(el => {
-        el.style.color = 'rgba(255,255,255,0.8)';
-        el.style.fontFamily = 'Material Symbols Rounded';
-    });
-
-    // 4. Fix collapsed control icon color
-    document.querySelectorAll('[data-testid="collapsedControl"] [data-testid="stIconMaterial"]').forEach(el => {
-        el.style.color = '#ffffff';
-        el.style.fontFamily = 'Material Symbols Rounded';
-    });
-
-    // 5. Hide broken expander header glyphs/markers in batch analysis
-    document.querySelectorAll(`
-        [data-testid="stExpander"] summary [data-testid="stIconMaterial"],
-        [data-testid="stExpander"] summary .material-symbols-rounded,
-        [data-testid="stExpander"] summary svg,
-        [data-testid="stExpander"] summary span[aria-hidden="true"]
-    `).forEach(el => {
-        el.style.display = 'none';
-    });
-}
-const _observer = new MutationObserver(fixUI);
-_observer.observe(document.body, { childList: true, subtree: true });
-document.addEventListener('DOMContentLoaded', fixUI);
-setTimeout(fixUI, 500);
-setTimeout(fixUI, 1500);
-</script>
-""", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
 # DATABASE
