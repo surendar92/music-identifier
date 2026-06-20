@@ -105,7 +105,7 @@ html, body, [class*="css"] {
 [data-testid="collapsedControl"] [data-testid="stIconMaterial"],
 [data-testid="collapsedControl"] svg {
     font-family: 'Material Symbols Rounded' !important;
-    fill: #ffffff !important;
+    fill: #000000 !important;
     color: #ffffff !important;
     font-size: 22px !important;
     width: 22px !important;
