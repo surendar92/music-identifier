@@ -20,9 +20,21 @@ st.markdown("""
 /* ── SATOSHI FONT ── */
 @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block');
 
-*, html, body, [class*="css"] {
+/* Apply Satoshi to everything EXCEPT Material icon spans */
+*:not([data-testid="stIconMaterial"]):not(.material-symbols-rounded),
+html, body, [class*="css"] {
     font-family: 'Satoshi', 'Inter', sans-serif !important;
+}
+
+/* Ensure Material Symbols font is always used for icon elements */
+[data-testid="stIconMaterial"],
+.material-symbols-rounded,
+[data-testid="stSidebarCollapseButton"] button span,
+[data-testid="collapsedControl"] span,
+[data-testid="stFileUploaderDropzone"] button span {
+    font-family: 'Material Symbols Rounded' !important;
 }
 
 /* ── MAIN BACKGROUND — light green from RoomSketch ── */
@@ -57,35 +69,18 @@ st.markdown("""
     opacity: 1 !important;
 }
 [data-testid="stSidebarCollapseButton"] button {
-    background: rgba(255,255,255,0.1) !important;
+    background: rgba(255,255,255,0.08) !important;
     border: none !important;
     border-radius: 6px !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    overflow: hidden !important;
-    width: 32px !important;
-    height: 32px !important;
-    padding: 4px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
 }
 [data-testid="stSidebarCollapseButton"] button:hover {
-    background: rgba(255,255,255,0.2) !important;
+    background: rgba(255,255,255,0.18) !important;
 }
-/* Hide any text nodes / spans inside the button (the "keyboard_double_arrow" label) */
-[data-testid="stSidebarCollapseButton"] button span,
-[data-testid="stSidebarCollapseButton"] button p,
-[data-testid="stSidebarCollapseButton"] button div:not(:has(svg)) {
-    display: none !important;
-}
-[data-testid="stSidebarCollapseButton"] svg {
-    fill: #ffffff !important;
-    color: #ffffff !important;
-    width: 18px !important;
-    height: 18px !important;
-    display: block !important;
-    flex-shrink: 0 !important;
+/* Icon inside the collapse button */
+[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"] {
+    font-family: 'Material Symbols Rounded' !important;
+    color: rgba(255,255,255,0.7) !important;
+    font-size: 20px !important;
 }
 
 /* ── COLLAPSED CONTROL (the arrow tab when sidebar is hidden) ── */
@@ -107,11 +102,14 @@ st.markdown("""
 [data-testid="collapsedControl"]:hover {
     background: #2d5a27 !important;
 }
+[data-testid="collapsedControl"] [data-testid="stIconMaterial"],
 [data-testid="collapsedControl"] svg {
+    font-family: 'Material Symbols Rounded' !important;
     fill: #ffffff !important;
     color: #ffffff !important;
-    width: 14px !important;
-    height: 14px !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
 }
 
 /* ── SIDEBAR LOGO ── */
@@ -328,25 +326,9 @@ st.markdown("""
     gap: 8px !important;
 }
 
-/* Hide the "Drag and drop / upload" instruction span — it's the duplicate text */
-[data-testid="stFileUploaderDropzoneInstructions"] > div > span:first-child {
+/* Hide the "Drag and drop" instruction text span */
+[data-testid="stFileUploaderDropzoneInstructions"] > div > span {
     display: none !important;
-}
-[data-testid="stFileUploaderDropzoneInstructions"] > div > small {
-    display: none !important;
-}
-
-/* Also hide any raw label element that Streamlit injects as a file-input proxy */
-[data-testid="stFileUploaderDropzone"] > label {
-    display: none !important;
-}
-
-/* Keep the small format/size hint */
-[data-testid="stFileUploaderDropzoneInstructions"] small {
-    color: #6b7f6b !important;
-    font-size: 0.78rem !important;
-    display: block !important;
-    margin-top: 6px !important;
 }
 
 /* Style the Browse Files button */
@@ -355,19 +337,34 @@ st.markdown("""
     color: #ffffff !important;
     border: none !important;
     border-radius: 8px !important;
-    padding: 10px 28px !important;
+    padding: 10px 24px !important;
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
+    gap: 0 !important;
 }
 [data-testid="stFileUploaderDropzone"] button:hover {
     background-color: #2d5a27 !important;
 }
-[data-testid="stFileUploaderDropzone"] button span,
-[data-testid="stFileUploaderDropzone"] button p {
+
+/* Hide the material icon span inside the upload button (shows as "upload" text when font missing) */
+[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"] {
+    display: none !important;
+}
+/* Make the button text white */
+[data-testid="stFileUploaderDropzone"] button p,
+[data-testid="stFileUploaderDropzone"] button > span:not([data-testid="stIconMaterial"]) {
     color: #ffffff !important;
     font-weight: 600 !important;
-    visibility: visible !important;
+    font-family: 'Satoshi', 'Inter', sans-serif !important;
+}
+
+/* File size/format hint */
+[data-testid="stFileUploaderDropzoneInstructions"] small {
+    color: #6b7f6b !important;
+    font-size: 0.78rem !important;
+    display: block !important;
+    margin-top: 6px !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
@@ -494,31 +491,31 @@ header[data-testid="stHeader"] {
 audio { border-radius: 8px !important; width: 100%; }
 </style>
 <script>
-// Fix: Remove the duplicate "upload" label text in Streamlit file uploader.
-// Streamlit renders BOTH a <span> label and a <button> — we hide the span.
-function fixUploader() {
-    document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"]').forEach(el => {
-        // Hide the main "Drag and drop..." / "Upload" span, keep only <small>
-        el.querySelectorAll('div > span').forEach(span => {
-            span.style.display = 'none';
-        });
+function fixUI() {
+    // 1. Hide the material icon span inside the upload button (renders as "upload" text)
+    document.querySelectorAll('[data-testid="stFileUploaderDropzone"] button [data-testid="stIconMaterial"]').forEach(el => {
+        el.style.display = 'none';
     });
-    // Also hide any standalone label inside the dropzone (file input proxy)
-    document.querySelectorAll('[data-testid="stFileUploaderDropzone"] > label').forEach(lbl => {
-        lbl.style.display = 'none';
+    // 2. Hide the "Drag and drop" instruction text span
+    document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"] > div > span').forEach(el => {
+        el.style.display = 'none';
     });
-    // Fix sidebar collapse button text (keyboard_double_arrow text node)
-    document.querySelectorAll('[data-testid="stSidebarCollapseButton"] button').forEach(btn => {
-        btn.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) node.textContent = '';
-            if (node.nodeName === 'SPAN' && !node.querySelector('svg')) node.style.display = 'none';
-        });
+    // 3. Fix sidebar collapse button icon color
+    document.querySelectorAll('[data-testid="stSidebarCollapseButton"] [data-testid="stIconMaterial"]').forEach(el => {
+        el.style.color = 'rgba(255,255,255,0.8)';
+        el.style.fontFamily = 'Material Symbols Rounded';
+    });
+    // 4. Fix collapsed control icon color
+    document.querySelectorAll('[data-testid="collapsedControl"] [data-testid="stIconMaterial"]').forEach(el => {
+        el.style.color = '#ffffff';
+        el.style.fontFamily = 'Material Symbols Rounded';
     });
 }
-// Run on load and observe for dynamic re-renders
-document.addEventListener('DOMContentLoaded', fixUploader);
-const observer = new MutationObserver(fixUploader);
-observer.observe(document.body, { childList: true, subtree: true });
+const _observer = new MutationObserver(fixUI);
+_observer.observe(document.body, { childList: true, subtree: true });
+document.addEventListener('DOMContentLoaded', fixUI);
+setTimeout(fixUI, 500);
+setTimeout(fixUI, 1500);
 </script>
 """, unsafe_allow_html=True)
 
