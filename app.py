@@ -60,14 +60,32 @@ st.markdown("""
     background: rgba(255,255,255,0.1) !important;
     border: none !important;
     border-radius: 6px !important;
-    color: #ffffff !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    overflow: hidden !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 [data-testid="stSidebarCollapseButton"] button:hover {
     background: rgba(255,255,255,0.2) !important;
 }
+/* Hide any text nodes / spans inside the button (the "keyboard_double_arrow" label) */
+[data-testid="stSidebarCollapseButton"] button span,
+[data-testid="stSidebarCollapseButton"] button p,
+[data-testid="stSidebarCollapseButton"] button div:not(:has(svg)) {
+    display: none !important;
+}
 [data-testid="stSidebarCollapseButton"] svg {
     fill: #ffffff !important;
     color: #ffffff !important;
+    width: 18px !important;
+    height: 18px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
 }
 
 /* ── COLLAPSED CONTROL (the arrow tab when sidebar is hidden) ── */
@@ -302,21 +320,33 @@ st.markdown("""
     background-color: #f8faf6 !important;
     border-radius: 8px !important;
     border: none !important;
-    padding: 24px 16px !important;
-    text-align: center !important;
+    padding: 28px 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
 }
 
-/* Hide EVERYTHING inside the dropzone by default */
-[data-testid="stFileUploaderDropzone"] * {
-    visibility: hidden !important;
+/* Hide the "Drag and drop / upload" instruction span — it's the duplicate text */
+[data-testid="stFileUploaderDropzoneInstructions"] > div > span:first-child {
+    display: none !important;
+}
+[data-testid="stFileUploaderDropzoneInstructions"] > div > small {
+    display: none !important;
 }
 
-/* Then selectively show only the button and the small hint text */
-[data-testid="stFileUploaderDropzone"] button,
-[data-testid="stFileUploaderDropzone"] button *,
-[data-testid="stFileUploaderDropzoneInstructions"] small,
-[data-testid="stFileUploaderDropzoneInstructions"] small * {
-    visibility: visible !important;
+/* Also hide any raw label element that Streamlit injects as a file-input proxy */
+[data-testid="stFileUploaderDropzone"] > label {
+    display: none !important;
+}
+
+/* Keep the small format/size hint */
+[data-testid="stFileUploaderDropzoneInstructions"] small {
+    color: #6b7f6b !important;
+    font-size: 0.78rem !important;
+    display: block !important;
+    margin-top: 6px !important;
 }
 
 /* Style the Browse Files button */
@@ -329,7 +359,6 @@ st.markdown("""
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    display: inline-block !important;
 }
 [data-testid="stFileUploaderDropzone"] button:hover {
     background-color: #2d5a27 !important;
@@ -338,14 +367,7 @@ st.markdown("""
 [data-testid="stFileUploaderDropzone"] button p {
     color: #ffffff !important;
     font-weight: 600 !important;
-}
-
-/* File size / format hint */
-[data-testid="stFileUploaderDropzoneInstructions"] small {
-    color: #6b7f6b !important;
-    font-size: 0.78rem !important;
-    display: block !important;
-    margin-top: 8px !important;
+    visibility: visible !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
@@ -471,6 +493,33 @@ header[data-testid="stHeader"] {
 /* ── AUDIO PLAYER ── */
 audio { border-radius: 8px !important; width: 100%; }
 </style>
+<script>
+// Fix: Remove the duplicate "upload" label text in Streamlit file uploader.
+// Streamlit renders BOTH a <span> label and a <button> — we hide the span.
+function fixUploader() {
+    document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"]').forEach(el => {
+        // Hide the main "Drag and drop..." / "Upload" span, keep only <small>
+        el.querySelectorAll('div > span').forEach(span => {
+            span.style.display = 'none';
+        });
+    });
+    // Also hide any standalone label inside the dropzone (file input proxy)
+    document.querySelectorAll('[data-testid="stFileUploaderDropzone"] > label').forEach(lbl => {
+        lbl.style.display = 'none';
+    });
+    // Fix sidebar collapse button text (keyboard_double_arrow text node)
+    document.querySelectorAll('[data-testid="stSidebarCollapseButton"] button').forEach(btn => {
+        btn.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) node.textContent = '';
+            if (node.nodeName === 'SPAN' && !node.querySelector('svg')) node.style.display = 'none';
+        });
+    });
+}
+// Run on load and observe for dynamic re-renders
+document.addEventListener('DOMContentLoaded', fixUploader);
+const observer = new MutationObserver(fixUploader);
+observer.observe(document.body, { childList: true, subtree: true });
+</script>
 """, unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
