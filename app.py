@@ -29,11 +29,13 @@ st.markdown("""
 .stApp { background: #f0f4ec !important; }
 .main .block-container { padding: 2rem 2.5rem !important; max-width: 100% !important; }
 
-/* ── SIDEBAR — dark green from RoomSketch ── */
+/* ── SIDEBAR — dark green ── */
 [data-testid="stSidebar"] {
     background: #162316 !important;
     border-right: none !important;
     box-shadow: 3px 0 20px rgba(0,0,0,0.25) !important;
+    visibility: visible !important;
+    display: block !important;
 }
 [data-testid="stSidebarContent"] { padding: 1.5rem 1.2rem !important; }
 
@@ -48,36 +50,50 @@ st.markdown("""
     color: #ffffff !important;
 }
 
-/* ── SIDEBAR COLLAPSE ARROW — always visible, compact & professional ── */
-[data-testid="collapsedControl"] {
-    display: flex !important;
+/* ── SIDEBAR COLLAPSE/EXPAND BUTTON (the arrow inside sidebar) ── */
+[data-testid="stSidebarCollapseButton"] {
     visibility: visible !important;
+    display: flex !important;
+    opacity: 1 !important;
+}
+[data-testid="stSidebarCollapseButton"] button {
+    background: rgba(255,255,255,0.1) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    color: #ffffff !important;
+}
+[data-testid="stSidebarCollapseButton"] button:hover {
+    background: rgba(255,255,255,0.2) !important;
+}
+[data-testid="stSidebarCollapseButton"] svg {
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}
+
+/* ── COLLAPSED CONTROL (the arrow tab when sidebar is hidden) ── */
+[data-testid="collapsedControl"] {
+    visibility: visible !important;
+    display: flex !important;
     opacity: 1 !important;
     pointer-events: auto !important;
-    background-color: #162316 !important;
-    position: fixed !important;
-    top: 50% !important;
-    left: 0 !important;
-    transform: translateY(-50%) !important;
     z-index: 999999 !important;
-    width: 20px !important;
-    height: 48px !important;
-    border-radius: 0 6px 6px 0 !important;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.35) !important;
-    transition: background 0.2s, width 0.2s !important;
+    background-color: #162316 !important;
+    border-radius: 0 8px 8px 0 !important;
+    box-shadow: 3px 0 12px rgba(0,0,0,0.4) !important;
+    padding: 12px 6px !important;
     cursor: pointer !important;
     align-items: center !important;
     justify-content: center !important;
+    transition: background 0.2s !important;
 }
 [data-testid="collapsedControl"]:hover {
     background: #2d5a27 !important;
-    width: 24px !important;
 }
 [data-testid="collapsedControl"] svg {
     fill: #ffffff !important;
     color: #ffffff !important;
-    width: 12px !important;
-    height: 12px !important;
+    width: 14px !important;
+    height: 14px !important;
 }
 
 /* ── SIDEBAR LOGO ── */
@@ -286,46 +302,50 @@ st.markdown("""
     background-color: #f8faf6 !important;
     border-radius: 8px !important;
     border: none !important;
-    padding: 24px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
-    position: relative !important;
+    padding: 24px 16px !important;
+    text-align: center !important;
 }
 
-/* Hide the "Drag and drop" text label — it duplicates the button text */
-[data-testid="stFileUploaderDropzoneInstructions"] > div > span {
-    display: none !important;
+/* Hide EVERYTHING inside the dropzone by default */
+[data-testid="stFileUploaderDropzone"] * {
+    visibility: hidden !important;
 }
 
-/* Show only the small format hint below */
-[data-testid="stFileUploaderDropzoneInstructions"] small {
-    color: #6b7f6b !important;
-    font-weight: 400 !important;
-    font-size: 0.78rem !important;
+/* Then selectively show only the button and the small hint text */
+[data-testid="stFileUploaderDropzone"] button,
+[data-testid="stFileUploaderDropzone"] button *,
+[data-testid="stFileUploaderDropzoneInstructions"] small,
+[data-testid="stFileUploaderDropzoneInstructions"] small * {
+    visibility: visible !important;
 }
 
-/* Style the actual Browse Files button */
+/* Style the Browse Files button */
 [data-testid="stFileUploaderDropzone"] button {
     background-color: #162316 !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 6px !important;
-    padding: 9px 26px !important;
+    border-radius: 8px !important;
+    padding: 10px 28px !important;
     font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    order: -1 !important;
+    display: inline-block !important;
 }
 [data-testid="stFileUploaderDropzone"] button:hover {
     background-color: #2d5a27 !important;
 }
-[data-testid="stFileUploaderDropzone"] button p,
-[data-testid="stFileUploaderDropzone"] button span {
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploaderDropzone"] button p {
     color: #ffffff !important;
     font-weight: 600 !important;
+}
+
+/* File size / format hint */
+[data-testid="stFileUploaderDropzoneInstructions"] small {
+    color: #6b7f6b !important;
+    font-size: 0.78rem !important;
+    display: block !important;
+    margin-top: 8px !important;
 }
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
@@ -403,28 +423,16 @@ hr { border-color: #e2e8dc !important; }
 .stWarning { background: #fffbeb !important; }
 .stInfo    { background: #f0fdf4 !important; border-color: #86efac !important; }
 
-/* ── HIDE CHROME (but keep sidebar reopen control alive) ── */
+/* ── HIDE CHROME ── */
 #MainMenu { visibility: hidden; }
 footer     { visibility: hidden; }
 
-/* Don't hide the whole header — that also hides the button that
-   reopens a collapsed sidebar. Hide only the toolbar bits we don't want. */
-/* Ensure header and structural tracking components are always visible and layout properly */
 header[data-testid="stHeader"] {
     background: transparent !important;
     z-index: 999 !important;
-    display: flex !important;
 }
 
-[data-testid="stSidebar"] {
-    visibility: visible !important;
-    display: block !important;
-}
-header[data-testid="stHeader"] [data-testid="stToolbar"] {
-    visibility: hidden !important;
-}
-
-/* collapsedControl styles defined above */
+/* sidebar and collapsedControl styles defined above */
 
 /* ── DATABASE VIEW — dark constellation thumbnail cards ── */
 .db-grid-label {
