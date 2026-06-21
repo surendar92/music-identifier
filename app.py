@@ -582,33 +582,28 @@ setTimeout(fixUI, 1500);
 
 // ── FALLING STARS ──
 (function() {
+    const old = document.getElementById('star-canvas');
+    if (old) old.remove();
+
     const canvas = document.createElement('canvas');
     canvas.id = 'star-canvas';
-    canvas.style.cssText = `
-        position: fixed; top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        pointer-events: none;
-        z-index: 0;
-    `;
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;display:block;';
     document.body.appendChild(canvas);
-    const ctx = canvas.getContext('2d');
 
-    function resize() {
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize);
 
-    const STAR_COUNT = 70;
+    const STAR_COUNT = 90;
     const stars = Array.from({length: STAR_COUNT}, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.8 + 0.4,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 2.2 + 0.8,
         speedX: (Math.random() - 0.5) * 0.3,
-        speedY: Math.random() * 0.5 + 0.15,
-        baseOpacity: Math.random() * 0.45 + 0.1,
-        twinkleSpeed: Math.random() * 0.018 + 0.004,
+        speedY: Math.random() * 0.6 + 0.2,
+        baseOpacity: Math.random() * 0.5 + 0.35,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
         twinkleOffset: Math.random() * Math.PI * 2,
     }));
 
@@ -619,13 +614,25 @@ setTimeout(fixUI, 1500);
         stars.forEach(s => {
             s.x += s.speedX;
             s.y += s.speedY;
-            if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
-            if (s.x < 0)  s.x = canvas.width;
+            if (s.y > canvas.height) { s.y = -4; s.x = Math.random() * canvas.width; }
+            if (s.x < 0) s.x = canvas.width;
             if (s.x > canvas.width) s.x = 0;
-            const alpha = s.baseOpacity * (0.5 + 0.5 * Math.sin(frame * s.twinkleSpeed + s.twinkleOffset));
+
+            const alpha = s.baseOpacity * (0.55 + 0.45 * Math.sin(frame * s.twinkleSpeed + s.twinkleOffset));
+
+            // soft glow
+            const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 2.5);
+            grad.addColorStop(0, 'rgba(100,160,90,' + alpha + ')');
+            grad.addColorStop(1, 'rgba(100,160,90,0)');
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.size * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // solid core
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(45, 90, 39, ${alpha})`;
+            ctx.fillStyle = 'rgba(180,220,170,' + alpha + ')';
             ctx.fill();
         });
         requestAnimationFrame(animate);
