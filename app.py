@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import sqlite3
 import os
 import numpy as np
@@ -37,8 +38,8 @@ html, body, [class*="css"] {
     font-family: 'Material Symbols Rounded' !important;
 }
 
-/* ── MAIN BACKGROUND — light green from RoomSketch ── */
-.stApp { background: #f0f4ec !important; }
+/* ── MAIN BACKGROUND — darkened so stars are visible ── */
+.stApp { background: #1a2e1a !important; }
 .main .block-container { padding: 2rem 2.5rem !important; max-width: 100% !important; }
 
 /* ── SIDEBAR — dark green ── */
@@ -579,68 +580,95 @@ _observer.observe(document.body, { childList: true, subtree: true });
 document.addEventListener('DOMContentLoaded', fixUI);
 setTimeout(fixUI, 500);
 setTimeout(fixUI, 1500);
+</script>
+""", unsafe_allow_html=True)
 
-// ── FALLING STARS ──
+# ── FALLING STARS (uses components.html to escape iframe sandbox) ──
+components.html("""
+<script>
 (function() {
-    const old = document.getElementById('star-canvas');
+    // Run in parent window context
+    const doc = window.parent.document;
+
+    // Remove any old canvas from a previous hot-reload
+    const old = doc.getElementById('star-canvas');
     if (old) old.remove();
 
-    const canvas = document.createElement('canvas');
+    const canvas = doc.createElement('canvas');
     canvas.id = 'star-canvas';
-    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;display:block;';
-    document.body.appendChild(canvas);
+    canvas.style.cssText = [
+        'position:fixed',
+        'top:0',
+        'left:0',
+        'width:100vw',
+        'height:100vh',
+        'pointer-events:none',
+        'z-index:1',
+        'display:block'
+    ].join(';');
+    doc.body.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    resize();
-    window.addEventListener('resize', resize);
 
-    const STAR_COUNT = 90;
-    const stars = Array.from({length: STAR_COUNT}, () => ({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        size: Math.random() * 2.2 + 0.8,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: Math.random() * 0.6 + 0.2,
-        baseOpacity: Math.random() * 0.5 + 0.35,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-        twinkleOffset: Math.random() * Math.PI * 2,
+    function resize() {
+        canvas.width  = window.parent.innerWidth;
+        canvas.height = window.parent.innerHeight;
+    }
+    resize();
+    window.parent.addEventListener('resize', resize);
+
+    // Build star list
+    const N = 120;
+    const stars = Array.from({length: N}, () => ({
+        x:            Math.random() * canvas.width,
+        y:            Math.random() * canvas.height,
+        r:            Math.random() * 1.6 + 0.4,       // 0.4 – 2 px radius
+        speedY:       Math.random() * 0.55 + 0.15,     // fall speed
+        speedX:       (Math.random() - 0.5) * 0.25,    // slight drift
+        baseAlpha:    Math.random() * 0.55 + 0.3,      // 0.3 – 0.85
+        twSpeed:      Math.random() * 0.025 + 0.005,
+        twOffset:     Math.random() * Math.PI * 2,
     }));
 
     let frame = 0;
-    function animate() {
+    function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         frame++;
+
         stars.forEach(s => {
+            // Move
             s.x += s.speedX;
             s.y += s.speedY;
-            if (s.y > canvas.height) { s.y = -4; s.x = Math.random() * canvas.width; }
-            if (s.x < 0) s.x = canvas.width;
-            if (s.x > canvas.width) s.x = 0;
+            if (s.y > canvas.height + 4) { s.y = -4;  s.x = Math.random() * canvas.width; }
+            if (s.x < -4)                  s.x = canvas.width  + 4;
+            if (s.x > canvas.width  + 4)   s.x = -4;
 
-            const alpha = s.baseOpacity * (0.55 + 0.45 * Math.sin(frame * s.twinkleSpeed + s.twinkleOffset));
+            // Twinkle
+            const a = s.baseAlpha * (0.5 + 0.5 * Math.sin(frame * s.twSpeed + s.twOffset));
 
-            // soft glow
-            const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 2.5);
-            grad.addColorStop(0, 'rgba(100,160,90,' + alpha + ')');
-            grad.addColorStop(1, 'rgba(100,160,90,0)');
+            // Glow halo
+            const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4);
+            g.addColorStop(0,   'rgba(180,255,160,' + (a * 0.6) + ')');
+            g.addColorStop(0.4, 'rgba(140,220,120,' + (a * 0.25) + ')');
+            g.addColorStop(1,   'rgba(140,220,120,0)');
             ctx.beginPath();
-            ctx.arc(s.x, s.y, s.size * 2.5, 0, Math.PI * 2);
-            ctx.fillStyle = grad;
+            ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2);
+            ctx.fillStyle = g;
             ctx.fill();
 
-            // solid core
+            // Bright core dot
             ctx.beginPath();
-            ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(180,220,170,' + alpha + ')';
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(220,255,210,' + a + ')';
             ctx.fill();
         });
-        requestAnimationFrame(animate);
+
+        requestAnimationFrame(draw);
     }
-    animate();
+    draw();
 })();
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
 
 # ═══════════════════════════════════════════
 # DATABASE
