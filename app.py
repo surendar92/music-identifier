@@ -39,12 +39,12 @@ html, body, [class*="css"] {
 }
 
 /* ── MAIN BACKGROUND — darkened so stars are visible ── */
-.stApp { background: #1a2e1a !important; }
+.stApp { background: #0d1b2e !important; }
 .main .block-container { padding: 2rem 2.5rem !important; max-width: 100% !important; }
 
 /* ── SIDEBAR — dark green ── */
 [data-testid="stSidebar"] {
-    background: #162316 !important;
+    background: #11203a !important;
     border-right: none !important;
     box-shadow: 3px 0 20px rgba(0,0,0,0.25) !important;
     visibility: visible !important;
@@ -91,7 +91,7 @@ html, body, [class*="css"] {
     opacity: 1 !important;
     pointer-events: auto !important;
     z-index: 999999 !important;
-    background-color: #162316 !important;
+    background-color: #11203a !important;
     border-radius: 0 8px 8px 0 !important;
     box-shadow: 3px 0 12px rgba(0,0,0,0.4) !important;
     padding: 12px 6px !important;
@@ -101,7 +101,7 @@ html, body, [class*="css"] {
     transition: background 0.2s !important;
 }
 [data-testid="collapsedControl"]:hover {
-    background: #2d5a27 !important;
+    background: #2d5a9a !important;
 }
 [data-testid="collapsedControl"] [data-testid="stIconMaterial"],
 [data-testid="collapsedControl"] svg {
@@ -120,7 +120,7 @@ html, body, [class*="css"] {
     margin-bottom: 20px;
 }
 .sb-logo-icon {
-    width: 38px; height: 38px; background: #2d5a27;
+    width: 38px; height: 38px; background: #2d5a9a;
     border-radius: 8px; display: flex; align-items: center;
     justify-content: center; font-size: 1.2rem;
 }
@@ -152,7 +152,7 @@ html, body, [class*="css"] {
 }
 .sb-nav-item:hover { background: rgba(255,255,255,0.08) !important; color: white !important; }
 .sb-nav-item.active {
-    background: #2d5a27 !important; color: #ffffff !important; font-weight: 700;
+    background: #2d5a9a !important; color: #ffffff !important; font-weight: 700;
 }
 
 /* Hide streamlit button styling in sidebar nav */
@@ -176,7 +176,7 @@ html, body, [class*="css"] {
 
 /* ── PAGE HEADER — dark green bg, white text ── */
 .page-header {
-    background: #162316;
+    background: #11203a;
     border-radius: 16px; padding: 28px 32px; margin-bottom: 24px;
     box-shadow: 0 4px 20px rgba(22,35,22,0.25);
 }
@@ -186,29 +186,29 @@ html, body, [class*="css"] {
 /* ── MODE CARDS — white bg, black text ── */
 .mode-card {
     background: #ffffff; border-radius: 14px; padding: 24px 20px;
-    border: 2px solid #e2e8dc; text-align: center;
+    border: 2px solid #dbe2f0; text-align: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     height: 120px; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     transition: all 0.2s;
 }
-.mode-card h3 { color: #0f1f0f !important; margin: 0 0 5px; font-size: 1.05rem; font-weight: 700; }
+.mode-card h3 { color: #0f1f33 !important; margin: 0 0 5px; font-size: 1.05rem; font-weight: 700; }
 .mode-card p  { color: #6b7f6b !important; font-size: 0.8rem; margin: 0; }
 .mode-card.active {
-    border-color: #2d5a27; background: #edf3ea;
+    border-color: #2d5a9a; background: #e8edf7;
     box-shadow: 0 6px 20px rgba(45,90,39,0.15);
 }
-.mode-card.active h3 { color: #162316 !important; }
+.mode-card.active h3 { color: #11203a !important; }
 
 /* ── ALL MAIN CONTENT TEXT = BLACK ── */
 .main p, .main h1, .main h2, .main h3, .main h4, .main label, 
 .main [data-testid="stMarkdownContainer"] > p {
-    color: #0f1f0f !important;
+    color: #0f1f33 !important;
 }
 
 /* ── RESULT CARD — dark green bg, white text ── */
 .result-card {
-    background: #162316; border-radius: 16px;
+    background: #11203a; border-radius: 16px;
     padding: 28px 32px; margin: 16px 0;
     box-shadow: 0 8px 30px rgba(22,35,22,0.3);
     position: relative; overflow: hidden;
@@ -228,7 +228,7 @@ html, body, [class*="css"] {
 }
 .yt-btn {
     display: inline-block; margin-top: 12px; margin-left: 8px;
-    background: #ffffff; color: #162316 !important; font-weight: 700;
+    background: #ffffff; color: #11203a !important; font-weight: 700;
     text-decoration: none !important; padding: 8px 18px;
     border-radius: 20px; font-size: 0.82rem;
     box-shadow: 0 3px 10px rgba(0,0,0,0.15);
@@ -236,8 +236,8 @@ html, body, [class*="css"] {
 
 /* ── SECTION HEADER ── */
 .sec-hdr {
-    font-size: 1rem; font-weight: 700; color: #0f1f0f !important;
-    border-left: 4px solid #2d5a27; padding-left: 12px; margin: 20px 0 12px;
+    font-size: 1rem; font-weight: 700; color: #0f1f33 !important;
+    border-left: 4px solid #2d5a9a; padding-left: 12px; margin: 20px 0 12px;
     display: block;
 }
 
@@ -246,37 +246,37 @@ html, body, [class*="css"] {
     display: flex; align-items: center; gap: 12px;
     padding: 11px 14px; border-radius: 10px;
     background: #ffffff; margin-bottom: 6px;
-    border: 1px solid #e2e8dc;
+    border: 1px solid #dbe2f0;
     box-shadow: 0 1px 6px rgba(0,0,0,0.04);
     transition: transform 0.15s;
 }
 .cand-row:hover { transform: translateX(3px); border-color: #a3c49a; }
 .cand-rank { font-size: 0.7rem; color: #9ca3af !important; width: 22px; font-weight: 700; }
-.cand-name { color: #0f1f0f !important; font-size: 0.88rem; font-weight: 600; flex: 1; }
+.cand-name { color: #0f1f33 !important; font-size: 0.88rem; font-weight: 600; flex: 1; }
 .cand-score{
-    color: #162316 !important; font-size: 0.8rem; font-weight: 700;
-    background: #d1e8c8; padding: 3px 10px; border-radius: 8px;
+    color: #11203a !important; font-size: 0.8rem; font-weight: 700;
+    background: #c9d9f2; padding: 3px 10px; border-radius: 8px;
 }
 
 /* ── METRICS ── */
 [data-testid="metric-container"] {
     background: #ffffff !important; border-radius: 12px !important;
-    border: 1px solid #e2e8dc !important; padding: 16px !important;
+    border: 1px solid #dbe2f0 !important; padding: 16px !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 [data-testid="stMetricLabel"] { color: #6b7f6b !important; font-size: 0.7rem !important; font-weight: 600 !important; letter-spacing: 1px; text-transform: uppercase; }
-[data-testid="stMetricValue"] { color: #0f1f0f !important; font-size: 1.5rem !important; font-weight: 800 !important; }
+[data-testid="stMetricValue"] { color: #0f1f33 !important; font-size: 1.5rem !important; font-weight: 800 !important; }
 
 /* ── BUTTONS (main area) ── */
 .main .stButton > button {
-    background: #162316 !important; color: #ffffff !important;
+    background: #11203a !important; color: #ffffff !important;
     border: none !important; border-radius: 8px !important;
     font-weight: 700 !important; font-size: 0.88rem !important;
     padding: 11px 22px !important;
     box-shadow: 0 3px 12px rgba(22,35,22,0.3) !important;
 }
 .main .stButton > button:hover {
-    background: #2d5a27 !important;
+    background: #2d5a9a !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 6px 18px rgba(22,35,22,0.35) !important;
 }
@@ -287,7 +287,7 @@ html, body, [class*="css"] {
     border-radius: 10px !important;
     padding: 6px !important; 
     gap: 20px !important; /* 👈 Increased from 3px to 20px for clear breathing room */
-    border: 1px solid #e2e8dc !important;
+    border: 1px solid #dbe2f0 !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
 }
 .stTabs [data-baseweb="tab"] {
@@ -300,7 +300,7 @@ html, body, [class*="css"] {
     padding-right: 16px !important; /* 👈 Added horizontal internal padding */
 }
 .stTabs [aria-selected="true"] {
-    background: #162316 !important; 
+    background: #11203a !important; 
     color: #ffffff !important;
 }
 .stTabs [data-baseweb="tab-panel"] {
@@ -316,7 +316,7 @@ html, body, [class*="css"] {
 }
 
 [data-testid="stFileUploaderDropzone"] {
-    background-color: #f8faf6 !important;
+    background-color: #eef1f8 !important;
     border-radius: 8px !important;
     border: none !important;
     padding: 28px 16px !important;
@@ -334,7 +334,7 @@ html, body, [class*="css"] {
 
 /* ── FILE UPLOADER BUTTON FIX ── */
 [data-testid="stFileUploaderDropzone"] button {
-    background-color: #162316 !important;
+    background-color: #11203a !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 8px !important;
@@ -351,7 +351,7 @@ html, body, [class*="css"] {
 
 /* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
-    background-color: #2d5a27 !important;
+    background-color: #2d5a9a !important;
 }
 
 /* Hide every icon/material/upload glyph inside the button */
@@ -387,15 +387,15 @@ html, body, [class*="css"] {
 
 /* ── BATCH CARD ── */
 .batch-card {
-    background: #ffffff; border: 1px solid #e2e8dc;
+    background: #ffffff; border: 1px solid #dbe2f0;
     border-radius: 12px; padding: 16px 18px; margin-bottom: 6px;
     box-shadow: 0 1px 8px rgba(0,0,0,0.04);
 }
 .batch-fname { font-size: 0.72rem; color: #9ca3af !important; margin-bottom: 2px; }
-.batch-sname { font-size: 1.05rem; font-weight: 700; color: #0f1f0f !important; }
+.batch-sname { font-size: 1.05rem; font-weight: 700; color: #0f1f33 !important; }
 .batch-pos   {
     display: inline-block; margin-top: 6px;
-    background: #d1f0d1; color: #145214 !important;
+    background: #c9e0f5; color: #143a6f !important;
     padding: 3px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
 }
 
@@ -404,9 +404,9 @@ html, body, [class*="css"] {
 [data-testid="stExpander"] summary {
     background: #ffffff !important;
     border-radius: 10px !important;
-    border: 1px solid #e2e8dc !important;
+    border: 1px solid #dbe2f0 !important;
     font-weight: 600 !important;
-    color: #0f1f0f !important;
+    color: #0f1f33 !important;
 
     display: flex !important;
     align-items: center !important;
@@ -435,15 +435,15 @@ html, body, [class*="css"] {
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span,
 [data-testid="stExpander"] summary div {
-    color: #0f1f0f !important;
+    color: #0f1f33 !important;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
     margin: 0 !important;
     line-height: 1.35 !important;
 }
 .streamlit-expanderContent,
 [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-    background: #f8faf6 !important;
-    border: 1px solid #e2e8dc !important;
+    background: #eef1f8 !important;
+    border: 1px solid #dbe2f0 !important;
     border-top: none !important; border-radius: 0 0 10px 10px !important;
     padding: 16px !important;
 }
@@ -461,7 +461,7 @@ html, body, [class*="css"] {
 [data-testid="stExpander"] h2,
 [data-testid="stExpander"] h3,
 [data-testid="stExpander"] h4 {
-    color: #0f1f0f !important;
+    color: #0f1f33 !important;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
 }
 
@@ -472,15 +472,15 @@ html, body, [class*="css"] {
     font-family: 'Satoshi', 'Inter', sans-serif !important;
     font-size: 0.92rem;
     font-weight: 700;
-    color: #0f1f0f !important;
+    color: #0f1f33 !important;
     margin: 14px 0 8px;
 }
 
 /* ── PROGRESS ── */
-.stProgress > div > div { background: #2d5a27 !important; border-radius: 4px !important; }
+.stProgress > div > div { background: #2d5a9a !important; border-radius: 4px !important; }
 
 /* ── DIVIDER ── */
-hr { border-color: #e2e8dc !important; }
+hr { border-color: #dbe2f0 !important; }
 
 /* ── ALERTS ── */
 [data-testid="stNotification"] { border-radius: 10px !important; }
@@ -506,7 +506,7 @@ header[data-testid="stHeader"] {
     display: block;
 }
 .db-card {
-    background: #0c140c; border-radius: 12px; padding: 10px 10px 14px;
+    background: #0a1422; border-radius: 12px; padding: 10px 10px 14px;
     border: 1px solid #243524;
     box-shadow: 0 2px 10px rgba(0,0,0,0.15);
     transition: transform 0.15s, box-shadow 0.15s;
@@ -617,18 +617,25 @@ components.html("""
     resize();
     window.parent.addEventListener('resize', resize);
 
-    // Build star list
-    const N = 120;
-    const stars = Array.from({length: N}, () => ({
-        x:            Math.random() * canvas.width,
-        y:            Math.random() * canvas.height,
-        r:            Math.random() * 1.6 + 0.4,       // 0.4 – 2 px radius
-        speedY:       Math.random() * 0.55 + 0.15,     // fall speed
-        speedX:       (Math.random() - 0.5) * 0.25,    // slight drift
-        baseAlpha:    Math.random() * 0.55 + 0.3,      // 0.3 – 0.85
-        twSpeed:      Math.random() * 0.025 + 0.005,
-        twOffset:     Math.random() * Math.PI * 2,
-    }));
+    // Build shooting-star list — travel diagonally from top-right to bottom-left
+    const N = 70;
+    const ANGLE = Math.PI * 0.78; // direction of travel (down-left, from top-right)
+    const dirX = Math.cos(ANGLE);
+    const dirY = Math.sin(ANGLE);
+
+    function makeStar() {
+        return {
+            x:            Math.random() * canvas.width * 1.3,
+            y:            Math.random() * canvas.height * 0.7 - canvas.height * 0.15,
+            r:            Math.random() * 1.4 + 0.5,       // 0.5 – 1.9 px radius
+            speed:        Math.random() * 2.2 + 0.8,       // travel speed along trail
+            trailLen:     Math.random() * 70 + 30,         // 30 – 100 px
+            baseAlpha:    Math.random() * 0.5 + 0.4,        // 0.4 – 0.9
+            twSpeed:      Math.random() * 0.03 + 0.005,
+            twOffset:     Math.random() * Math.PI * 2,
+        };
+    }
+    const stars = Array.from({length: N}, makeStar);
 
     let frame = 0;
     function draw() {
@@ -636,30 +643,49 @@ components.html("""
         frame++;
 
         stars.forEach(s => {
-            // Move
-            s.x += s.speedX;
-            s.y += s.speedY;
-            if (s.y > canvas.height + 4) { s.y = -4;  s.x = Math.random() * canvas.width; }
-            if (s.x < -4)                  s.x = canvas.width  + 4;
-            if (s.x > canvas.width  + 4)   s.x = -4;
+            // Move along the diagonal (top-right -> bottom-left)
+            s.x += dirX * s.speed;
+            s.y += dirY * s.speed;
+
+            // Recycle once it leaves the bottom-left, re-enter near top-right
+            if (s.y > canvas.height + 20 || s.x < -20) {
+                s.x = canvas.width * (0.6 + Math.random() * 0.7);
+                s.y = -20 - Math.random() * canvas.height * 0.3;
+            }
 
             // Twinkle
-            const a = s.baseAlpha * (0.5 + 0.5 * Math.sin(frame * s.twSpeed + s.twOffset));
+            const a = s.baseAlpha * (0.55 + 0.45 * Math.sin(frame * s.twSpeed + s.twOffset));
 
-            // Glow halo
+            // Trail (line gradient pointing back toward top-right, the origin)
+            const tx = s.x - dirX * s.trailLen;
+            const ty = s.y - dirY * s.trailLen;
+            const grad = ctx.createLinearGradient(s.x, s.y, tx, ty);
+            grad.addColorStop(0,   'rgba(235,245,255,' + a + ')');
+            grad.addColorStop(0.3, 'rgba(180,210,255,' + (a * 0.45) + ')');
+            grad.addColorStop(1,   'rgba(140,180,255,0)');
+
+            ctx.beginPath();
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = s.r;
+            ctx.lineCap = 'round';
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(tx, ty);
+            ctx.stroke();
+
+            // Soft glow halo at the head
             const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4);
-            g.addColorStop(0,   'rgba(180,255,160,' + (a * 0.6) + ')');
-            g.addColorStop(0.4, 'rgba(140,220,120,' + (a * 0.25) + ')');
-            g.addColorStop(1,   'rgba(140,220,120,0)');
+            g.addColorStop(0,   'rgba(210,230,255,' + (a * 0.7) + ')');
+            g.addColorStop(0.4, 'rgba(160,200,255,' + (a * 0.3) + ')');
+            g.addColorStop(1,   'rgba(160,200,255,0)');
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2);
             ctx.fillStyle = g;
             ctx.fill();
 
-            // Bright core dot
+            // Bright core dot (star head)
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(220,255,210,' + a + ')';
+            ctx.fillStyle = 'rgba(255,255,255,' + a + ')';
             ctx.fill();
         });
 
@@ -741,8 +767,8 @@ def get_constellation_thumb(song_name, w_px=300, h_px=190):
 
         fig = plt.figure(figsize=(w_px/100, h_px/100), dpi=100)
         ax = fig.add_axes([0, 0, 1, 1])
-        fig.patch.set_facecolor('#0c140c')
-        ax.set_facecolor('#0c140c')
+        fig.patch.set_facecolor('#0a1422')
+        ax.set_facecolor('#0a1422')
 
         colors = ['#7dd3fc', '#fcd34d', '#f0abfc', '#86efac', '#fca5a5', '#a5b4fc']
         color = colors[abs(hash(song_name)) % len(colors)]
@@ -753,7 +779,7 @@ def get_constellation_thumb(song_name, w_px=300, h_px=190):
         ax.axis('off')
 
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', facecolor='#0c140c')
+        fig.savefig(buf, format='png', facecolor='#0a1422')
         plt.close(fig)
         buf.seek(0)
         b64 = base64.b64encode(buf.read()).decode()
@@ -805,12 +831,12 @@ def identify_query_clip_sqlite(path, conn):
 def make_fig():
     fig, ax = plt.subplots(figsize=(11, 4))
     fig.patch.set_facecolor('#ffffff')
-    ax.set_facecolor('#f8faf6')
-    for sp in ax.spines.values(): sp.set_edgecolor('#e2e8dc')
+    ax.set_facecolor('#eef1f8')
+    for sp in ax.spines.values(): sp.set_edgecolor('#dbe2f0')
     ax.tick_params(colors='#4b5563')
     ax.xaxis.label.set_color('#4b5563')
     ax.yaxis.label.set_color('#4b5563')
-    ax.title.set_color('#0f1f0f')
+    ax.title.set_color('#0f1f33')
     return fig, ax
 
 def plot_spectrogram(metadata, title="Spectrogram"):
@@ -832,20 +858,20 @@ def plot_constellation(metadata, title="Constellation Map"):
     fig, ax = make_fig()
     pt, pf = metadata['peak_times'], metadata['peak_freqs']
     if len(pt) > 0:
-        ax.scatter(pt, pf, s=12, color='#2d5a27', alpha=0.7, edgecolors='#162316', linewidths=0.3)
+        ax.scatter(pt, pf, s=12, color='#2d5a9a', alpha=0.7, edgecolors='#11203a', linewidths=0.3)
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Frequency (Hz)")
     ax.set_title(f"{title} — {len(pt)} peaks", fontweight='bold', pad=10)
-    ax.grid(True, alpha=0.2, color='#e2e8dc')
+    ax.grid(True, alpha=0.2, color='#dbe2f0')
     plt.tight_layout()
     return fig
 
 def plot_histogram(offsets, song_name):
     fig, ax = make_fig()
     if offsets:
-        ax.hist(offsets, bins=50, color='#2d5a27', edgecolor='#162316', alpha=0.8)
+        ax.hist(offsets, bins=50, color='#2d5a9a', edgecolor='#11203a', alpha=0.8)
     ax.set_xlabel("Time Offset (s)"); ax.set_ylabel("Matching Hashes")
     ax.set_title(f"Offset Histogram — {song_name}", fontweight='bold', pad=10)
-    ax.grid(True, alpha=0.2, color='#e2e8dc', axis='y')
+    ax.grid(True, alpha=0.2, color='#dbe2f0', axis='y')
     plt.tight_layout()
     return fig
 
