@@ -592,12 +592,12 @@ def get_db_connection():
     except:
         return None
 
-@st.cache_resource
+@st.cache_data(ttl=5)
 def get_db_stats():
-    conn = get_db_connection()
-    if conn is None:
+    if not os.path.exists("music_database.db"):
         return 0, 0, 0, 0
     try:
+        conn = sqlite3.connect("music_database.db", check_same_thread=False)
         cur = conn.cursor()
         cur.execute("SELECT COUNT(DISTINCT song_name) FROM hashes")
         songs = cur.fetchone()[0]
@@ -605,25 +605,28 @@ def get_db_stats():
         uhash = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM hashes")
         total = cur.fetchone()[0]
-        size  = os.path.getsize("music_database.db")/1024/1024 if os.path.exists("music_database.db") else 0
+        size  = os.path.getsize("music_database.db") / 1024 / 1024
+        conn.close()
         return songs, uhash, total, size
     except:
         return 0, 0, 0, 0
 
-@st.cache_data
+@st.cache_data(ttl=5)
 def get_song_list_with_counts():
     """Returns [(song_name, hash_count), ...] sorted by song name."""
-    conn = get_db_connection()
-    if conn is None:
+    if not os.path.exists("music_database.db"):
         return []
     try:
+        conn = sqlite3.connect("music_database.db", check_same_thread=False)
         cur = conn.cursor()
         cur.execute("SELECT song_name, COUNT(*) FROM hashes GROUP BY song_name ORDER BY song_name")
-        return cur.fetchall()
+        rows = cur.fetchall()
+        conn.close()
+        return rows
     except:
         return []
 
-@st.cache_data
+@st.cache_data(ttl=30)
 def get_constellation_thumb(song_name, w_px=300, h_px=190):
     """
     Builds a small dark constellation-map scatter for one song using the
@@ -631,7 +634,9 @@ def get_constellation_thumb(song_name, w_px=300, h_px=190):
     and returns it as a base64 PNG data-URI for embedding in HTML cards.
     """
     import io, base64
-    conn = get_db_connection()
+    if not os.path.exists("music_database.db"):
+        return None
+    conn = sqlite3.connect("music_database.db", check_same_thread=False)
     if conn is None:
         return None
     try:
@@ -664,8 +669,10 @@ def get_constellation_thumb(song_name, w_px=300, h_px=190):
         plt.close(fig)
         buf.seek(0)
         b64 = base64.b64encode(buf.read()).decode()
+        conn.close()
         return f"data:image/png;base64,{b64}"
     except Exception:
+        conn.close()
         return None
 
 # ═══════════════════════════════════════════
