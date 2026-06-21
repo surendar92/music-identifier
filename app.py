@@ -83,7 +83,7 @@ html, body, [class*="css"] {
     font-size: 20px !important;
 }
 
-/* ── COLLAPSED CONTROL (The arrow tab when sidebar is hidden) ── */
+/* ── COLLAPSED CONTROL (the arrow tab when sidebar is hidden) ── */
 [data-testid="collapsedControl"] {
     visibility: visible !important;
     display: flex !important;
@@ -93,7 +93,7 @@ html, body, [class*="css"] {
     background-color: #162316 !important;
     border-radius: 0 8px 8px 0 !important;
     box-shadow: 3px 0 12px rgba(0,0,0,0.4) !important;
-    padding: 12px 10px !important;
+    padding: 12px 6px !important;
     cursor: pointer !important;
     align-items: center !important;
     justify-content: center !important;
@@ -105,14 +105,11 @@ html, body, [class*="css"] {
 [data-testid="collapsedControl"] [data-testid="stIconMaterial"],
 [data-testid="collapsedControl"] svg {
     font-family: 'Material Symbols Rounded' !important;
-    fill: #000000 !important;
+    fill: #ffffff !important;
     color: #ffffff !important;
-    font-size: 22px !important;
-    width: 22px !important;
-    height: 22px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
 }
 
 /* ── SIDEBAR LOGO ── */
@@ -371,10 +368,8 @@ html, body, [class*="css"] {
     color: #ffffff !important;
     font-weight: 600 !important;
     font-family: 'Satoshi', 'Inter', sans-serif !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    line-height: 1 !important;
 }
+
 /* File size/format hint */
 [data-testid="stFileUploaderDropzoneInstructions"] small {
     color: #6b7f6b !important;
@@ -565,7 +560,7 @@ function fixUI() {
 
     // 4. Fix collapsed control icon color
     document.querySelectorAll('[data-testid="collapsedControl"] [data-testid="stIconMaterial"]').forEach(el => {
-        el.style.color = '#000000';
+        el.style.color = '#ffffff';
         el.style.fontFamily = 'Material Symbols Rounded';
     });
 
