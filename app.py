@@ -236,7 +236,7 @@ html, body, [class*="css"] {
 
 /* ── SECTION HEADER ── */
 .sec-hdr {
-    font-size: 1rem; font-weight: 700; color: #0f1f33 !important;
+    font-size: 1rem; font-weight: 700; color: #ffffff !important;
     border-left: 4px solid #2d5a9a; padding-left: 12px; margin: 20px 0 12px;
     display: block;
 }
@@ -264,8 +264,8 @@ html, body, [class*="css"] {
     border: 1px solid #dbe2f0 !important; padding: 16px !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
 }
-[data-testid="stMetricLabel"] { color: #6b7f6b !important; font-size: 0.7rem !important; font-weight: 600 !important; letter-spacing: 1px; text-transform: uppercase; }
-[data-testid="stMetricValue"] { color: #0f1f33 !important; font-size: 1.5rem !important; font-weight: 800 !important; }
+[data-testid="stMetricLabel"] { color: rgba(255,255,255,0.55) !important; font-size: 0.7rem !important; font-weight: 600 !important; letter-spacing: 1px; text-transform: uppercase; }
+[data-testid="stMetricValue"] { color: #ffffff !important; font-size: 1.5rem !important; font-weight: 800 !important; }
 
 /* ── BUTTONS (main area) ── */
 .main .stButton > button {
@@ -984,7 +984,7 @@ st.markdown("---")
 # ═══════════════════════════════════════════
 if st.session_state.mode == "Single":
     st.markdown('<span class="sec-hdr">Upload Audio Clip</span>', unsafe_allow_html=True)
-    st.markdown('<span style="color: black;">Supports WAV, MP3, OGG, FLAC, M4A</span>', unsafe_allow_html=True)
+    st.markdown('<span style="color: rgba(255,255,255,0.75);">Supports WAV, MP3, OGG, FLAC, M4A</span>', unsafe_allow_html=True)
 
     uploaded = st.file_uploader("", type=["wav","mp3","ogg","flac","m4a"], label_visibility="collapsed")
 
