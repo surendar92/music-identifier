@@ -4,7 +4,7 @@ An end-to-end audio fingerprinting system built for the **EE200: Signals, System
 
 ---
 
-## 🚀 Features
+##  Features
 
 - **Single-Clip Mode:** Upload an audio clip to instantly identify the track and visualize the step-by-step pipeline outputs (Spectrogram, Constellation Peaks, and Offset Alignment Histogram).
 - **Batch Evaluation Mode:** Upload multiple query clips simultaneously to automatically execute a parallelized search and download a structured `results.csv` sheet.
@@ -13,12 +13,12 @@ An end-to-end audio fingerprinting system built for the **EE200: Signals, System
 
 ---
 
-## 🛠️ System Architecture & Pipeline
+##  System Architecture & Pipeline
 
 ```text
 [Audio Input] ──► [STFT Spectrogram] ──► [Constellation Map] ──► [Pairwise Hashes] ──► [Histogram Matching]
 
-## 📂 Repository Layout
+##  Repository Layout
 
 ```text
 ├── .idea/                 # IDE configurations
